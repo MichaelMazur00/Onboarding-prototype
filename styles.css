@@ -66,6 +66,10 @@
 
   /* Motion tokens — every transition derives from these */
   --ease:      cubic-bezier(.16, 1, .3, 1);
+  /* Entrances only. Steeper off the line than --ease — a tenth of the way
+     through it is already 66% there, against 49% — so content reads as
+     arriving sooner at the same duration. */
+  --ease-enter: cubic-bezier(.05, .85, .15, 1);
   --speed:     1;
   --t-fast:    calc(160ms * var(--speed));
   --t-base:    calc(420ms * var(--speed));
@@ -444,7 +448,7 @@ body.is-onboarding .guide { opacity: 0; pointer-events: none; }
    reads through behind it. `page-in` then brings the new one up. */
 body.is-swapping .surface { opacity: 0; }
 
-body.is-arriving .surface { animation: page-in var(--t-base) var(--ease); }
+body.is-arriving .surface { animation: page-in var(--t-base) var(--ease-enter); }
 @keyframes page-in {
   from { opacity: 0; }
   to   { opacity: 1; }
@@ -452,7 +456,7 @@ body.is-arriving .surface { animation: page-in var(--t-base) var(--ease); }
 
 /* Replayed on demand — the page settling into its new state after Save.
    Opacity only, to match the route change and the dashboard arrival. */
-.fade-in { animation: fade-in var(--t-base) var(--ease) both; }
+.fade-in { animation: fade-in var(--t-base) var(--ease-enter) both; }
 @keyframes fade-in {
   from { opacity: 0; }
   to   { opacity: 1; }
