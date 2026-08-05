@@ -184,12 +184,14 @@
   function commitToPage(complete) {
     document.body.classList.add('is-swapping');
     closeLayer();
+    // 240ms is enough for the modal to clear on `--ease`, which front-loads
+    // most of its fade — so the white hold stays short.
     setTimeout(() => {
       complete();
       document.body.classList.remove('is-swapping');
       document.body.classList.add('is-arriving');
-      setTimeout(() => document.body.classList.remove('is-arriving'), ms(700) + 60);
-    }, ms(360));
+      setTimeout(() => document.body.classList.remove('is-arriving'), ms(420) + 60);
+    }, ms(240));
   }
 
   // Always reopens on step one
@@ -529,8 +531,8 @@
       document.body.classList.add('is-arriving');
 
       // The guide follows a beat later, on its own transition
-      setTimeout(() => document.body.classList.remove('is-onboarding'), ms(420));
-      setTimeout(() => document.body.classList.remove('is-arriving'), ms(700) + 60);
+      setTimeout(() => document.body.classList.remove('is-onboarding'), ms(240));
+      setTimeout(() => document.body.classList.remove('is-arriving'), ms(420) + 60);
     });
   });
 

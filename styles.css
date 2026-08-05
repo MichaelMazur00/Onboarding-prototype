@@ -444,7 +444,7 @@ body.is-onboarding .guide { opacity: 0; pointer-events: none; }
    reads through behind it. `page-in` then brings the new one up. */
 body.is-swapping .surface { opacity: 0; }
 
-body.is-arriving .surface { animation: page-in var(--t-slow) var(--ease); }
+body.is-arriving .surface { animation: page-in var(--t-base) var(--ease); }
 @keyframes page-in {
   from { opacity: 0; }
   to   { opacity: 1; }
@@ -452,7 +452,7 @@ body.is-arriving .surface { animation: page-in var(--t-slow) var(--ease); }
 
 /* Replayed on demand — the page settling into its new state after Save.
    Opacity only, to match the route change and the dashboard arrival. */
-.fade-in { animation: fade-in var(--t-slow) var(--ease) both; }
+.fade-in { animation: fade-in var(--t-base) var(--ease) both; }
 @keyframes fade-in {
   from { opacity: 0; }
   to   { opacity: 1; }
