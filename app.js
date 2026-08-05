@@ -138,6 +138,7 @@
   const nameIn   = $('#bizName');
   const siteIn   = $('#bizSite');
   let current    = null;
+  let stagedExit = false;   // set only by the Go-to-Dashboard handover
 
   function openLayer(el, after) {
     if (current) return;
@@ -155,12 +156,17 @@
     el.classList.remove('is-on');
     el.classList.add('is-leaving');
     backdrop.classList.remove('is-on');
+    // Dismissing any other way (Esc, backdrop, close) brings the guide straight
+    // back. Only the staged Go-to-Dashboard exit holds it for its own beat.
+    if (!stagedExit) document.body.classList.remove('is-onboarding');
+    stagedExit = false;
     setTimeout(() => el.classList.remove('is-leaving'), ms(500) + 50);
   }
 
   // Always reopens on step one
   const openDialog = () =>
     openLayer(dialog, () => {
+      document.body.classList.add('is-onboarding');
       dialog.classList.remove('is-step2');
       setTimeout(() => nameIn.focus(), ms(340));
     });
@@ -465,16 +471,38 @@
   const startBoxes  = $$('.startcard input');
   const goDashboard = $('#goDashboardBtn');
 
+  const platformBox = $('#startPlatform');   // `preview` is declared above
+
   const syncStartOptions = () => {
     goDashboard.disabled = !startBoxes.some(b => b.checked);
+    // Picking the platform option brands the card with the Connect mark
+    preview.classList.toggle('is-platform', platformBox.checked);
   };
   startBoxes.forEach(b => b.addEventListener('change', syncStartOptions));
 
   $('#continueBtn').addEventListener('click', () => dialog.classList.add('is-step2'));
   $('#dialogBack').addEventListener('click', () => dialog.classList.remove('is-step2'));
 
-  // Landing on the dashboard is where the setup guide takes over.
-  goDashboard.addEventListener('click', closeLayer);
+  // Landing on the dashboard is where the setup guide takes over. The handover
+  // is staged: the CTA works for a beat, the dialog leaves, then the dashboard
+  // arrives behind it — so the three moments read separately.
+  goDashboard.addEventListener('click', () => {
+    if (goDashboard.classList.contains('is-busy')) return;
+    goDashboard.classList.add('is-busy');
+
+    setTimeout(() => {
+      goDashboard.classList.remove('is-busy');
+      stagedExit = true;
+      closeLayer();
+
+      // Hold until the dialog has faded before the page settles in
+      setTimeout(() => {
+        document.body.classList.remove('is-onboarding');
+        document.body.classList.add('is-arriving');
+        setTimeout(() => document.body.classList.remove('is-arriving'), ms(700) + 50);
+      }, ms(260));
+    }, ms(850));
+  });
 
   /* ── Boot ──────────────────────────────── */
 
@@ -485,6 +513,8 @@
   // pages stay reachable directly. Two frames so the entrance transition has
   // an initial state to animate from.
   if (!location.hash || location.hash === '#home') {
+    // Set before the first paint, so the guide never flashes under the scrim
+    document.body.classList.add('is-onboarding');
     requestAnimationFrame(() => requestAnimationFrame(openDialog));
   }
 })();

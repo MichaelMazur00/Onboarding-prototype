@@ -51,7 +51,8 @@ Motion lives in the interaction:
 - **Onboarding modal** — scale + rise on open, dim backdrop, reverse on close.
 - **Live card preview** — the Stripe card on the right fills in as you type. The logo tile takes the first initial and flips to Furever green (`#27AE60`, the brand accent from [furever.dev](https://www.furever.dev/)), the name and URL chip go from placeholder grey to live, and the chip bumps on each keystroke.
 - **Colour on commit** (Figma `295:53835`) — blurring the website field settles the card into its printed state: the panel takes its colour wash, the card takes its printed art, the tile shifts to the design's `#15BE53` and picks up two initials, and the URL becomes a translucent pill with a brand dot. Typing alone doesn't trigger it — it waits until you click out.
-- **Choosing how to start** — the card carries over from step one untouched. All three options start unchecked and `Go to Dashboard` stays disabled until one is ticked.
+- **Choosing how to start** — the card carries over from step one untouched. All three options start unchecked and `Go to Dashboard` stays disabled until one is ticked. Ticking *Platform or marketplace payments* brands the card with the Connect mark (Figma `297:56887`), bottom-left, under the logo tile and opposite the Stripe wordmark.
+- **Handing over to the dashboard** — `Go to Dashboard` runs as three separate beats rather than one cut: the CTA works for a moment under a spinner, the dialog leaves, then the dashboard settles in behind it. The Setup guide is held out of the scrim for the whole dialog and returns with the page.
 - **Creating the test account** — `Continue` in the test-account modal checks off *Create a test account* and swaps the Connected accounts empty state for the account table (status filters, the `Furever` row, pagination).
 - **Creating the test charge** — `Create test charge` in the charge modal checks off *Create a test charge*, unlocks the last task, and fills in the account's Money movement section in place: payment tabs and the charge row. The API log below rewrites itself at the same time, so it reads as traffic that just happened.
 
@@ -80,6 +81,8 @@ Routing is hash-based (`#home` / `#connect` / `#connected` / `#account` / `#paym
 The account pages (`#account` / `#payment`) take the sidebar's place: a full-bleed account header with its own left rail, per the design. Both share that shell — only the main pane and the rail's current item change.
 
 The Setup guide is an accordion — opening a group closes the others — and its progress bar moves proportionally across the six tasks (four under *Test Connect*, two under *Verify your business*). The design frames all draw the bar at its resting width; the proportional fill is a deliberate departure.
+
+Two other deliberate departures on the Connect overview: the *Resources* heading is dropped so the card aligns with the top of the *Payments volume* label, and *Payments volume* carries *Account status*'s Bold rather than the design's Semibold, so the two section titles read as peers. Pages taller than the viewport now scroll, which the Connect overview needs once *Account status* is in place.
 
 Completing a task implies every task before it, so the guide stays coherent no matter which order you drive it in.
 

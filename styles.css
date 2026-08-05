@@ -146,6 +146,26 @@ body {
     filter     var(--t-fast) var(--ease),
     box-shadow var(--t-fast) var(--ease);
 }
+
+/* Working state — the label gives way to a spinner in place, so the
+   button keeps its size and the row doesn't shift. */
+.btn.is-busy {
+  color: transparent;
+  pointer-events: none;
+}
+.btn.is-busy::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  animation: spin 600ms linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 .btn--sm { font-size: 14px; line-height: 20px; letter-spacing: -0.15px; padding: 4px 8px; height: 28px; }
 .btn--md { height: 40px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 .btn--block { width: 100%; }
@@ -363,6 +383,10 @@ body {
   padding: 20px 32px 40px;
   position: relative;
   z-index: 2;
+  /* Pages taller than the viewport scroll in place. The guide is pinned to
+     .surface, not .content, so it stays put while this moves. */
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* ───────── View switching ───────── */
@@ -384,6 +408,17 @@ body[data-view="home"] .toolbar__add { display: none; }
 .content { animation: route-in var(--t-base) var(--ease); }
 @keyframes route-in {
   from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* The onboarding dialog owns the screen: the guide must not read through
+   the scrim behind it. It returns as part of the arrival below. */
+body.is-onboarding .guide { opacity: 0; pointer-events: none; }
+
+/* Arrival — the dashboard settles in once the dialog has gone */
+body.is-arriving .content { animation: content-in var(--t-slow) var(--ease); }
+@keyframes content-in {
+  from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: none; }
 }
 
@@ -550,15 +585,19 @@ body.model-saved .coview { display: block; }
    308px, so the page margins stay put however wide the window gets */
 .cocols { margin-top: 16px; display: flex; gap: 55px; align-items: flex-start; }
 .cocol { flex: 1; min-width: 0; }
-.coside { flex: none; width: 308px; margin-top: 14px; }
+/* 12px matches .cowidget's padding-top, so the card's top edge lines up
+   with the top of the "Payments volume" label across the gutter. */
+.coside { flex: none; width: 308px; margin-top: 12px; }
 
 .cowidget { padding: 12px 0; display: flex; flex-direction: column; gap: 8px; }
 .cowidget__head { display: flex; flex-direction: column; }
+/* The design draws this at Body/Large emphasized (Semibold); it carries
+   Account status's Bold instead, so the two section titles read as peers. */
 .cowidget__title {
   font-size: 18px;
   line-height: 20px;
   letter-spacing: -0.15px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text);
 }
 .cowidget__value {
@@ -689,16 +728,7 @@ body.model-saved .coview { display: block; }
 .costatus__rows span { flex: 1; min-width: 0; }
 .costatus__rows b { width: 63px; text-align: right; font-weight: 400; }
 
-.coside__title {
-  font-family: var(--font-display);
-  font-size: 16px;
-  line-height: 24px;
-  letter-spacing: 0.3px;
-  font-weight: 700;
-  color: var(--text);
-}
 .cocard {
-  margin-top: 8px;
   padding: 20px;
   border-radius: 8px;
   background: var(--offset);
@@ -1722,6 +1752,7 @@ body[data-view="payment"] #cadPayment { display: block; }
   right: 24px;
   bottom: 24px;
   width: 288px;
+  transition: opacity var(--t-base) var(--ease);
   background: var(--surface);
   border: 1px solid rgba(0,39,77,0.08);
   border-radius: 12px;
@@ -2227,9 +2258,9 @@ button.task:hover { background: rgba(0,39,77,0.045); }
 .dialog__body { flex: 1; display: flex; flex-direction: column; gap: 24px; }
 
 /* Callout (Figma 295:54774) — rides just above the CTA, so it grows
-   upward off the button rather than pushing the fields down. */
+   upward off the button rather than pushing the fields down. The 24px
+   to the CTA is the .dialog__step gap; it needs no margin of its own. */
 .dialog__note {
-  margin-bottom: 24px;
   padding: 16px;
   border-radius: 8px;
   background: var(--offset);
@@ -2323,7 +2354,7 @@ button.task:hover { background: rgba(0,39,77,0.045); }
   align-items: center;
   gap: 8px;
   align-self: flex-start;
-  margin-top: 6px;
+  /* The 24px to the last option is the .dialog__body gap — no margin here */
   padding: 0;
   border: none;
   background: none;
@@ -2470,6 +2501,23 @@ button.task:hover { background: rgba(0,39,77,0.045); }
   40%  { transform: scale(1.05); }
   100% { transform: scale(1); }
 }
+
+/* Connect mark (Figma 297:56887) — rides the card's bottom-left corner,
+   opposite the Stripe wordmark, once the platform option is ticked. */
+.preview__connect {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  width: 16px;
+  height: 16px;
+  z-index: 1;
+  opacity: 0;
+  transform: scale(0.8);
+  transition:
+    opacity   var(--t-base) var(--ease),
+    transform var(--t-base) var(--ease);
+}
+.preview.is-platform .preview__connect { opacity: 1; transform: none; }
 
 .preview__vector { position: absolute; right: 15px; bottom: 47px; width: 268px; height: 272px; }
 .preview__stripe { position: absolute; right: 14px; bottom: 10px; width: 60px; height: 25px; }
