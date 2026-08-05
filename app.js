@@ -163,6 +163,21 @@
     setTimeout(() => el.classList.remove('is-leaving'), ms(500) + 50);
   }
 
+  // The commit beat. Every CTA that commits something — the business model,
+  // the test account, the test charge, the dashboard handover — works under a
+  // spinner first, so they all land the same way. If the layer is dismissed
+  // while the spinner runs (Esc, backdrop), the commit is abandoned.
+  function runCta(btn, done) {
+    if (btn.classList.contains('is-busy')) return;
+    const layer = current;
+    btn.classList.add('is-busy');
+    setTimeout(() => {
+      btn.classList.remove('is-busy');
+      if (current !== layer) return;
+      done();
+    }, ms(850));
+  }
+
   // Always reopens on step one
   const openDialog = () =>
     openLayer(dialog, () => {
@@ -228,9 +243,11 @@
   // Saving commits the choice and completes the setup-guide task.
   saveBtn.addEventListener('click', () => {
     if (!chosenModel) return;
-    savedModel = chosenModel;
-    closeLayer();
-    setTimeout(completeBusinessModel, ms(360));
+    runCta(saveBtn, () => {
+      savedModel = chosenModel;
+      closeLayer();
+      setTimeout(completeBusinessModel, ms(360));
+    });
   });
 
   /* ── Test connected account modal ──────── */
@@ -240,10 +257,14 @@
 
   $('#createTestAccountBtn').addEventListener('click', openAccount);
   $('#newAccountBtn').addEventListener('click', openAccount);
+  const accountContinue = $('#accountContinue');
+
   $('#accountClose').addEventListener('click', closeLayer);
-  $('#accountContinue').addEventListener('click', () => {
-    closeLayer();
-    setTimeout(completeTestAccount, ms(360));
+  accountContinue.addEventListener('click', () => {
+    runCta(accountContinue, () => {
+      closeLayer();
+      setTimeout(completeTestAccount, ms(360));
+    });
   });
 
   /* ── Test charge modal ─────────────────── */
@@ -251,10 +272,14 @@
   const chargeModal = $('#chargeModal');
 
   $('#testChargeBtn').addEventListener('click', () => openLayer(chargeModal));
+  const chargeCreate = $('#chargeCreate');
+
   $('#chargeClose').addEventListener('click', closeLayer);
-  $('#chargeCreate').addEventListener('click', () => {
-    closeLayer();
-    setTimeout(completeTestCharge, ms(360));
+  chargeCreate.addEventListener('click', () => {
+    runCta(chargeCreate, () => {
+      closeLayer();
+      setTimeout(completeTestCharge, ms(360));
+    });
   });
 
   /* ── Identity verification modal ───────── */
@@ -487,11 +512,7 @@
   // is staged: the CTA works for a beat, the dialog leaves, then the dashboard
   // arrives behind it — so the three moments read separately.
   goDashboard.addEventListener('click', () => {
-    if (goDashboard.classList.contains('is-busy')) return;
-    goDashboard.classList.add('is-busy');
-
-    setTimeout(() => {
-      goDashboard.classList.remove('is-busy');
+    runCta(goDashboard, () => {
       stagedExit = true;
       closeLayer();
 
@@ -502,7 +523,7 @@
       // The guide follows a beat later, on its own transition
       setTimeout(() => document.body.classList.remove('is-onboarding'), ms(420));
       setTimeout(() => document.body.classList.remove('is-arriving'), ms(700) + 60);
-    }, ms(850));
+    });
   });
 
   /* ── Boot ──────────────────────────────── */
