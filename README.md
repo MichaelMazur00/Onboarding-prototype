@@ -27,6 +27,7 @@ Built from Figma → **Portfolio-presentation-scratch**
 | Setup guide, collapsed | `105:25795` / `298:61874` |
 | Business model modal | `298:63550` (resting) / `298:66484` (selected) |
 | Connect overview, saved | `304:97049` |
+| Connect overview, Account status | `316:121474` / `316:122374` |
 | Connected accounts, empty | `304:98123` |
 | Connected accounts, populated | `306:58864` |
 | Connected account, no charges | `304:98889` / `314:99100` |
@@ -36,6 +37,7 @@ Built from Figma → **Portfolio-presentation-scratch**
 | Payment detail | `312:90172` |
 | Onboarding, step 1 | `295:53767` / `295:51969` (in context) |
 | Onboarding, card in colour | `295:53835` |
+| Onboarding callout, above the CTA | `295:54774` |
 | Onboarding, step 2 | `295:51892` |
 
 All icons, the Stripe card vector, and the colour wash are the **exported Figma assets** in `assets/` — nothing is hand-drawn. Colours and type in `styles.css` map 1:1 to the design tokens returned with the design context (`Text/Default #353A44`, `Background/Action Primary #675DFF`, `SF Pro Display` / `SF Pro Text`, etc.).
@@ -47,8 +49,8 @@ All icons, the Stripe card vector, and the colour wash are the **exported Figma 
 Motion lives in the interaction:
 
 - **Onboarding modal** — scale + rise on open, dim backdrop, reverse on close.
-- **Live card preview** — the Stripe card on the right fills in as you type. The logo tile takes the first initial and flips to brand purple, the name and URL chip go from placeholder grey to live, and the chip bumps on each keystroke.
-- **Colour on commit** (Figma `295:53835`) — blurring the website field settles the card into its printed state: the panel takes its colour wash, the card takes its printed art, the tile turns green with two initials, and the URL becomes a translucent pill with a brand dot. Typing alone doesn't trigger it — it waits until you click out.
+- **Live card preview** — the Stripe card on the right fills in as you type. The logo tile takes the first initial and flips to Furever green (`#27AE60`, the brand accent from [furever.dev](https://www.furever.dev/)), the name and URL chip go from placeholder grey to live, and the chip bumps on each keystroke.
+- **Colour on commit** (Figma `295:53835`) — blurring the website field settles the card into its printed state: the panel takes its colour wash, the card takes its printed art, the tile shifts to the design's `#15BE53` and picks up two initials, and the URL becomes a translucent pill with a brand dot. Typing alone doesn't trigger it — it waits until you click out.
 - **Choosing how to start** — the card carries over from step one untouched. All three options start unchecked and `Go to Dashboard` stays disabled until one is ticked.
 - **Creating the test account** — `Continue` in the test-account modal checks off *Create a test account* and swaps the Connected accounts empty state for the account table (status filters, the `Furever` row, pagination).
 - **Creating the test charge** — `Create test charge` in the charge modal checks off *Create a test charge*, unlocks the last task, and fills in the account's Money movement section in place: payment tabs and the charge row. The API log below rewrites itself at the same time, so it reads as traffic that just happened.

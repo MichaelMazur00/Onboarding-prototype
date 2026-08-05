@@ -49,6 +49,7 @@
   --paid-green:        #05690D;
   --text-ink-alt:      #1D3944;   /* Text/Default, identity sheet */
   --card-green:        #15BE53;   /* Light/Green, preview card tile */
+  --furever-green:     #27AE60;   /* Furever brand accent (furever.dev --accent) */
 
   --brand-25:          #F7F5FD;   /* Brand/25 */
   --brand-label:       #857AFE;
@@ -632,6 +633,61 @@ body.model-saved .coview { display: block; }
 .colist__rows > div:last-child { border-bottom: none; }
 .colist__rows span:first-child { flex: 1; min-width: 0; color: var(--text); }
 .colist__rows span:last-child { color: var(--text-subdued); }
+
+/* ───────── Account status (Figma 316:122374) ─────────
+   A stacked bar over a status breakdown. Every band and dot sits at
+   Neutral/50 while the counts are zero — the widget reads as empty,
+   not as three coloured cohorts. */
+.costatus { padding: 24px 0 16px; }
+.costatus__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 28px;
+  letter-spacing: 0.3px;
+  font-weight: 700;
+  color: var(--text);
+}
+.costatus__title img { width: 12px; height: 12px; }
+
+/* The three bands keep the design's 384 / 144 / 77 split at any width */
+.costatus__bar {
+  height: 50px;                /* 24px bar, centred in the design's band */
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.costatus__bar i {
+  flex-grow: 1;
+  height: 24px;
+  background: var(--neutral-50);
+}
+
+.costatus__rows > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-neutral);
+  font-size: 12px;
+  line-height: 20px;
+  letter-spacing: -0.15px;
+  color: var(--text-subdued);
+}
+.costatus__rows > div:last-child { border-bottom: none; }
+.costatus__dot {
+  width: 12px; height: 12px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--neutral-50);
+}
+.costatus__rows span { flex: 1; min-width: 0; }
+.costatus__rows b { width: 63px; text-align: right; font-weight: 400; }
 
 .coside__title {
   font-family: var(--font-display);
@@ -2169,6 +2225,19 @@ button.task:hover { background: rgba(0,39,77,0.045); }
 .dialog.is-step2 #dialogStep2 { display: flex; animation: fade-in var(--t-base) var(--ease); }
 
 .dialog__body { flex: 1; display: flex; flex-direction: column; gap: 24px; }
+
+/* Callout (Figma 295:54774) — rides just above the CTA, so it grows
+   upward off the button rather than pushing the fields down. */
+.dialog__note {
+  margin-bottom: 24px;
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--offset);
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: -0.15px;
+  color: var(--text-subdued);
+}
 .dialog__intro { display: flex; flex-direction: column; gap: 8px; }
 .dialog__intro h2 {
   font-family: var(--font-display);
@@ -2360,7 +2429,7 @@ button.task:hover { background: rgba(0,39,77,0.045); }
     transform  var(--t-base) var(--ease);
 }
 .preview__logo.is-filled {
-  background: var(--action-primary);
+  background: var(--furever-green);
   color: #fff;
   transform: scale(1.04);
 }
@@ -2432,7 +2501,7 @@ button.task:hover { background: rgba(0,39,77,0.045); }
 .preview__head, .preview__chip { position: relative; z-index: 1; }
 .preview__vector, .preview__stripe { z-index: 1; }
 
-.preview.is-color .preview__logo { background: var(--card-green); color: var(--text); }
+.preview.is-color .preview__logo { background: var(--card-green); color: #fff; }
 .preview.is-color .preview__name { color: var(--neutral-900); }
 
 .preview__dot { display: none; width: 4px; height: 4px; border-radius: 4px; background: var(--brand); }

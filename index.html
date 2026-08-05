@@ -282,6 +282,25 @@
                     <div><span>Account 5</span><span>$0.00</span></div>
                   </div>
                 </section>
+
+                <!-- Account status (Figma 316:122374) — empty until accounts exist -->
+                <section class="costatus">
+                  <h3 class="costatus__title">
+                    Account status<img src="assets/icons/co-info.svg" alt="" />
+                  </h3>
+
+                  <div class="costatus__bar">
+                    <i style="flex-basis: 384px"></i>
+                    <i style="flex-basis: 144px"></i>
+                    <i style="flex-basis: 77px"></i>
+                  </div>
+
+                  <div class="costatus__rows">
+                    <div><i class="costatus__dot"></i><span>Active</span><b>0</b></div>
+                    <div><i class="costatus__dot"></i><span>Restricted soon</span><b>0</b></div>
+                    <div><i class="costatus__dot"></i><span>Restricted</span><b>0</b></div>
+                  </div>
+                </section>
               </div>
 
               <aside class="coside">
@@ -882,6 +901,11 @@
                   <input id="bizSite" type="text" autocomplete="off" spellcheck="false" />
                 </div>
               </div>
+            </div>
+
+            <!-- Callout (Figma 295:54774) — sits above the CTA -->
+            <div class="dialog__note">
+              Stripe can't support certain <a class="link">prohibited and restricted businesses</a>. Ensure your business can be supported.
             </div>
 
             <div class="dialog__actions">
