@@ -178,6 +178,20 @@
     }, ms(850));
   }
 
+  // Committing from a modal blanks the page while the modal leaves, so the
+  // state you were just looking at never reads through behind it. The new
+  // state fades up from white once it's in place.
+  function commitToPage(complete) {
+    document.body.classList.add('is-swapping');
+    closeLayer();
+    setTimeout(() => {
+      complete();
+      document.body.classList.remove('is-swapping');
+      document.body.classList.add('is-arriving');
+      setTimeout(() => document.body.classList.remove('is-arriving'), ms(700) + 60);
+    }, ms(360));
+  }
+
   // Always reopens on step one
   const openDialog = () =>
     openLayer(dialog, () => {
@@ -245,8 +259,7 @@
     if (!chosenModel) return;
     runCta(saveBtn, () => {
       savedModel = chosenModel;
-      closeLayer();
-      setTimeout(completeBusinessModel, ms(360));
+      commitToPage(completeBusinessModel);
     });
   });
 
@@ -261,10 +274,7 @@
 
   $('#accountClose').addEventListener('click', closeLayer);
   accountContinue.addEventListener('click', () => {
-    runCta(accountContinue, () => {
-      closeLayer();
-      setTimeout(completeTestAccount, ms(360));
-    });
+    runCta(accountContinue, () => commitToPage(completeTestAccount));
   });
 
   /* ── Test charge modal ─────────────────── */
@@ -276,10 +286,7 @@
 
   $('#chargeClose').addEventListener('click', closeLayer);
   chargeCreate.addEventListener('click', () => {
-    runCta(chargeCreate, () => {
-      closeLayer();
-      setTimeout(completeTestCharge, ms(360));
-    });
+    runCta(chargeCreate, () => commitToPage(completeTestCharge));
   });
 
   /* ── Identity verification modal ───────── */
@@ -407,8 +414,7 @@
     // Swaps the hero CTAs on the Connect overview (Figma 304:97049).
     document.body.classList.add('model-saved');
 
-    // Settle into the new state — content first, guide just behind it.
-    fadeIn($('#viewConnect'));
+    // The page itself fades up from white via `page-in`; the guide trails it.
     fadeIn(guide, 120);
   }
 
@@ -418,7 +424,6 @@
     // The empty state gives way to the account table (Figma 306:58864).
     document.body.classList.add('model-saved', 'account-created');
 
-    fadeIn($('#viewConnected'));
     fadeIn(guide, 120);
   }
 
@@ -516,6 +521,9 @@
       stagedExit = true;
       closeLayer();
 
+      // Landing in the sandbox is what brands the account tile
+      document.body.classList.add('is-onboarded');
+
       // The page rises as one — nav, sidebar and content together — while the
       // scrim clears, so the handover reads as a single move.
       document.body.classList.add('is-arriving');
@@ -538,5 +546,8 @@
     // Set before the first paint, so the guide never flashes under the scrim
     document.body.classList.add('is-onboarding');
     requestAnimationFrame(() => requestAnimationFrame(openDialog));
+  } else {
+    // Deep links skip onboarding, so they start already inside the sandbox
+    document.body.classList.add('is-onboarded');
   }
 })();

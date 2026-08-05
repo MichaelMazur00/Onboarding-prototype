@@ -253,13 +253,33 @@ body {
 }
 
 .account { display: flex; align-items: center; gap: 8px; width: 220px; }
+/* The account tile stays the default grey through onboarding and only takes
+   Furever's mark once the user lands in the sandbox — same green and white
+   initial as the card they filled in. */
 .account__avatar {
   width: 24px; height: 24px;
   border-radius: 4px;
   background: var(--neutral-200);
   position: relative;
   flex: none;
+  transition: background var(--t-base) var(--ease);
 }
+.account__initial {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 700;
+  color: #fff;
+  opacity: 0;
+  transition: opacity var(--t-base) var(--ease);
+}
+body.is-onboarded .account__avatar { background: var(--furever-green); }
+body.is-onboarded .account__initial { opacity: 1; }
 .account__sandbox { position: absolute; left: 10px; top: 11px; width: 16px; height: 16px; }
 .account__text { display: flex; flex-direction: column; font-size: 12px; line-height: 16px; }
 .account__name { font-weight: 600; letter-spacing: -0.024px; }
@@ -420,6 +440,10 @@ body.is-onboarding .guide { opacity: 0; pointer-events: none; }
    together. It rides .surface rather than .content for two reasons: the nav
    is outside .content, and .content already owns `route-in`, so overriding
    its animation would re-fire that on the way back out — the double-take. */
+/* Held white while a modal leaves, so the state you were looking at never
+   reads through behind it. `page-in` then brings the new one up. */
+body.is-swapping .surface { opacity: 0; }
+
 body.is-arriving .surface { animation: page-in var(--t-slow) var(--ease); }
 @keyframes page-in {
   from { opacity: 0; }
@@ -2307,7 +2331,7 @@ button.task:hover { background: rgba(0,39,77,0.045); }
 
 /* Start options — the card keeps a 2px border either way so ticking one
    doesn't shift the stack */
-.startcards { display: flex; flex-direction: column; gap: 8px; }
+.startcards { display: flex; flex-direction: column; gap: 12px; }
 .startcard {
   display: flex;
   align-items: flex-start;
@@ -2359,8 +2383,8 @@ button.task:hover { background: rgba(0,39,77,0.045); }
   align-items: center;
   gap: 8px;
   align-self: flex-start;
-  /* .dialog__body's gap is 24px; this pulls it to 20px off the last option */
-  margin-top: -4px;
+  /* .dialog__body's gap is 24px; this pulls it to 8px off the last option */
+  margin-top: -16px;
   padding: 0;
   border: none;
   background: none;
