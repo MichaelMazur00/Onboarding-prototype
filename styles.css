@@ -404,11 +404,12 @@ body:not([data-view="home"]) .guidance { display: none; }
 body[data-view="home"] .toolbar__apps,
 body[data-view="home"] .toolbar__add { display: none; }
 
-/* Route change reads as navigation, not decoration */
+/* Route change reads as navigation, not decoration. Opacity only — content
+   settles in place rather than drifting up into it. */
 .content { animation: route-in var(--t-base) var(--ease); }
 @keyframes route-in {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: none; }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 /* The onboarding dialog owns the screen: the guide must not read through
@@ -425,11 +426,12 @@ body.is-arriving .surface { animation: page-in var(--t-slow) var(--ease); }
   to   { opacity: 1; }
 }
 
-/* Replayed on demand — the page settling into its new state after Save */
+/* Replayed on demand — the page settling into its new state after Save.
+   Opacity only, to match the route change and the dashboard arrival. */
 .fade-in { animation: fade-in var(--t-slow) var(--ease) both; }
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: none; }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 .content__head { display: flex; flex-direction: column; gap: 8px; margin-bottom: 40px; }
 
@@ -2305,7 +2307,7 @@ button.task:hover { background: rgba(0,39,77,0.045); }
 
 /* Start options — the card keeps a 2px border either way so ticking one
    doesn't shift the stack */
-.startcards { display: flex; flex-direction: column; gap: 16px; }
+.startcards { display: flex; flex-direction: column; gap: 8px; }
 .startcard {
   display: flex;
   align-items: flex-start;
@@ -2357,7 +2359,8 @@ button.task:hover { background: rgba(0,39,77,0.045); }
   align-items: center;
   gap: 8px;
   align-self: flex-start;
-  /* The 24px to the last option is the .dialog__body gap — no margin here */
+  /* .dialog__body's gap is 24px; this pulls it to 20px off the last option */
+  margin-top: -4px;
   padding: 0;
   border: none;
   background: none;
