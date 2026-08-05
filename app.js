@@ -481,6 +481,13 @@
     // The charge fills in the account's own money-movement section, in place
     // (Figma 314:100161); the payment page is a click away from its row.
     document.body.classList.add('model-saved', 'account-created', 'charge-created');
+
+    // A fresh account has no history, so its row sits at zero until this
+    // charge lands. Balance is the charge less the $1.82 processing fee the
+    // payment detail itemises, so the two pages agree.
+    $('#acctVolume').textContent  = '$500.00';
+    $('#acctBalance').textContent = '$498.18';
+
     go('#account');
 
     fadeIn($('#moneyMovement'));
