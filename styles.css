@@ -415,9 +415,12 @@ body[data-view="home"] .toolbar__add { display: none; }
    the scrim behind it. It returns as part of the arrival below. */
 body.is-onboarding .guide { opacity: 0; pointer-events: none; }
 
-/* Arrival — the dashboard settles in once the dialog has gone */
-body.is-arriving .content { animation: content-in var(--t-slow) var(--ease); }
-@keyframes content-in {
+/* Arrival — the page comes up as one piece: top nav, sidebar and content
+   together. It rides .surface rather than .content for two reasons: the nav
+   is outside .content, and .content already owns `route-in`, so overriding
+   its animation would re-fire that on the way back out — the double-take. */
+body.is-arriving .surface { animation: page-in var(--t-slow) var(--ease); }
+@keyframes page-in {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: none; }
 }

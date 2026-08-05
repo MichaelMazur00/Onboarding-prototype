@@ -495,12 +495,13 @@
       stagedExit = true;
       closeLayer();
 
-      // Hold until the dialog has faded before the page settles in
-      setTimeout(() => {
-        document.body.classList.remove('is-onboarding');
-        document.body.classList.add('is-arriving');
-        setTimeout(() => document.body.classList.remove('is-arriving'), ms(700) + 50);
-      }, ms(260));
+      // The page rises as one — nav, sidebar and content together — while the
+      // scrim clears, so the handover reads as a single move.
+      document.body.classList.add('is-arriving');
+
+      // The guide follows a beat later, on its own transition
+      setTimeout(() => document.body.classList.remove('is-onboarding'), ms(420));
+      setTimeout(() => document.body.classList.remove('is-arriving'), ms(700) + 60);
     }, ms(850));
   });
 
