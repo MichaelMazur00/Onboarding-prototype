@@ -326,6 +326,10 @@
   const previewChipText = $('span', previewChip);
   const dialogRight     = $('#dialogRight');
 
+  const initials = (str, max) =>
+    str.split(/\s+/).filter(Boolean).slice(0, max)
+       .map(word => word[0]).join('').toUpperCase();
+
   function syncPreview() {
     const name = nameIn.value.trim();
     const site = siteIn.value.trim();
@@ -334,8 +338,10 @@
     previewName.textContent = name || 'Business name';
     previewName.classList.toggle('is-filled', !!name);
 
-    // The printed card carries two initials; the plain one keeps its single letter
-    previewLogo.textContent = name ? name.slice(0, colored ? 2 : 1).toUpperCase() : '';
+    // Initials come from the start of each word, not the first N characters —
+    // "Furever" is one word, so it stays "F". The printed card will carry a
+    // second letter only when there is a second word to take it from.
+    previewLogo.textContent = name ? initials(name, colored ? 2 : 1) : '';
     previewLogo.classList.toggle('is-filled', !!name);
 
     previewChipText.textContent = site || 'www.example.com';
