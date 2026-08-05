@@ -1,0 +1,28 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="268" height="272" viewBox="0 0 268 272" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="paralellogram">
+<mask id="mask0_0_87" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="268" height="272">
+<g id="mask">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M0 267.093C0 269.627 2.32481 271.522 4.806 271.011L264.806 217.524C266.666 217.141 268 215.504 268 213.606V4.88843C268 2.36122 265.685 0.467359 263.208 0.96757L3.20829 53.4682C1.34202 53.845 0 55.4851 0 57.389L0 267.093Z" fill="white"/>
+</g>
+</mask>
+<g mask="url(#mask0_0_87)">
+<g id="gram">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M0 272L268 216.867V0L0 54.116L0 272Z" fill="url(#paint0_linear_0_87)" fill-opacity="0.24" style="mix-blend-mode:overlay"/>
+</g>
+<g id="glare" filter="url(#filter0_f_0_87)">
+<rect x="138" y="44" width="240" height="240" rx="120" fill="white" fill-opacity="0.8"/>
+</g>
+</g>
+</g>
+<defs>
+<filter id="filter0_f_0_87" x="58" y="-36" width="400" height="400" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="40" result="effect1_foregroundBlur_0_87"/>
+</filter>
+<linearGradient id="paint0_linear_0_87" x1="0.00263738" y1="31.5771" x2="223.965" y2="191.322" gradientUnits="userSpaceOnUse">
+<stop stop-color="white"/>
+<stop offset="1" stop-color="#EBEEF1"/>
+</linearGradient>
+</defs>
+</svg>

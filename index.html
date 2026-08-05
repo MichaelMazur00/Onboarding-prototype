@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stripe Onboarding</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ───────── App ───────── -->
+  <main class="stage" id="stage">
+    <div class="app" id="app">
+
+      <!-- Sandbox banner -->
+      <header class="banner" id="banner">
+        <span class="banner__label">Sandbox</span>
+        <p class="banner__msg">Get set up using <b>test data</b> and copy your work when going live.</p>
+        <button class="btn btn--primary btn--sm" id="verifyBtn">Verify your business</button>
+      </header>
+
+      <!-- Sandbox surface -->
+      <div class="surface" id="surface">
+
+        <!-- Colour wash -->
+        <div class="wash" id="wash">
+          <img src="assets/wave-wall.png" alt="" />
+        </div>
+
+        <!-- Top nav row -->
+        <div class="topnav" id="topnav">
+          <div class="account">
+            <div class="account__avatar">
+              <img class="account__sandbox" src="assets/icons/sandbox.svg" alt="" />
+            </div>
+            <div class="account__text">
+              <span class="account__name">Default sandbox</span>
+              <span class="account__org">Furever</span>
+            </div>
+          </div>
+
+          <div class="topnav__right">
+            <div class="search">
+              <img src="assets/icons/search.svg" alt="" />
+              <span>Search</span>
+            </div>
+            <div class="toolbar">
+              <img class="toolbar__apps" src="assets/icons/apps.svg" alt="Apps" />
+              <img src="assets/icons/help.svg" alt="Help" />
+              <img src="assets/icons/notifications.svg" alt="Notifications" />
+              <img src="assets/icons/settings.svg" alt="Settings" />
+              <img class="toolbar__add" src="assets/icons/add-circle-filled.svg" alt="Create" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+          <div class="sidebar__sections">
+            <div class="navgroup">
+              <a class="navitem" id="navHome"><span class="navitem__icon"><img class="icon-on" src="assets/icons/home.svg" alt="" /><img class="icon-off" src="assets/icons/home-inactive.svg" alt="" /></span><span class="navitem__label">Home</span></a>
+              <a class="navitem"><span class="navitem__icon"><img src="assets/icons/balance.svg" alt="" /></span><span class="navitem__label">Balances</span></a>
+              <a class="navitem"><span class="navitem__icon"><img src="assets/icons/arrows-loop.svg" alt="" /></span><span class="navitem__label">Transactions</span></a>
+              <a class="navitem"><span class="navitem__icon"><img src="assets/icons/person.svg" alt="" /></span><span class="navitem__label">Customers</span></a>
+              <a class="navitem"><span class="navitem__icon"><img src="assets/icons/product.svg" alt="" /></span><span class="navitem__label">Product catalog</span></a>
+            </div>
+
+            <div class="navgroup">
+              <span class="navheading">Products</span>
+              <a class="navitem navitem--toggle" id="navConnect"><span class="navitem__icon"><img src="assets/icons/platform.svg" alt="" /></span><span class="navitem__label">Connect</span><span class="navitem__chev"><img class="chev-down" src="assets/icons/chevron-down.svg" alt="" /><img class="chev-up" src="assets/icons/nav-chevron-up.svg" alt="" /></span></a>
+              <div class="subnav" id="connectSubnav">
+                <a class="subnav__item" id="navOverview">Overview</a>
+                <a class="subnav__item" id="navConnected">Connected accounts</a>
+              </div>
+              <a class="navitem navitem--toggle"><span class="navitem__icon"><img src="assets/icons/wallet.svg" alt="" /></span><span class="navitem__label">Payments</span><span class="navitem__chev"><img src="assets/icons/chevron-down.svg" alt="" /></span></a>
+              <a class="navitem navitem--toggle"><span class="navitem__icon"><img src="assets/icons/invoice.svg" alt="" /></span><span class="navitem__label">Billing</span><span class="navitem__chev"><img src="assets/icons/chevron-down.svg" alt="" /></span></a>
+              <a class="navitem navitem--toggle"><span class="navitem__icon"><img src="assets/icons/bar-chart.svg" alt="" /></span><span class="navitem__label">Reporting</span><span class="navitem__chev"><img src="assets/icons/chevron-down.svg" alt="" /></span></a>
+              <a class="navitem navitem--toggle"><span class="navitem__icon"><img src="assets/icons/more.svg" alt="" /></span><span class="navitem__label">More</span><span class="navitem__chev"><img src="assets/icons/chevron-down.svg" alt="" /></span></a>
+            </div>
+          </div>
+
+          <div class="sidebar__dev">
+            <a class="navitem"><span class="navitem__icon"><img src="assets/icons/api.svg" alt="" /></span><span class="navitem__label">Development tools</span></a>
+          </div>
+        </nav>
+
+        <!-- Page content · Connected accounts -->
+        <section class="content content--connect" id="viewConnected">
+
+          <!-- Empty state — before the first account exists -->
+          <div class="accounts-empty">
+            <div class="hero hero--plain">
+              <div class="hero__body hero__body--narrow">
+                <div class="hero__copy">
+                  <h1>Connected accounts</h1>
+                  <p>Your users will charge their customers using their connected accounts. You can configure accounts with different settings depending on how your business works.</p>
+                </div>
+                <div class="hero__actions">
+                  <button class="btn btn--primary btn--md" id="createTestAccountBtn">Create test account</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="callouts">
+              <div class="callout">
+                <h2>Onboard accounts</h2>
+                <p>Choose from Stripe-hosted, embedded, or API onboarding.</p>
+                <a class="link">View docs</a>
+              </div>
+              <div class="callout">
+                <h2>Manage accounts</h2>
+                <p>Learn how to find and manage connected accounts through the Stripe Dashboard.</p>
+                <a class="link">View docs</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Populated state — the test account has been created (Figma 306:58864) -->
+          <div class="accounts">
+            <div class="accounts__head">
+              <h1 class="page-title">Connected accounts</h1>
+              <button class="btn btn--primary btn--sm btn--icon" id="newAccountBtn">
+                <i class="btn__icon btn__icon--add"></i>New
+              </button>
+            </div>
+
+            <div class="filters" role="tablist" aria-label="Account status">
+              <button class="filter is-selected" role="tab" aria-selected="true">
+                <span class="filter__label">All</span><span class="filter__total">1</span>
+              </button>
+              <button class="filter" role="tab" aria-selected="false">
+                <span class="filter__label">Active</span><span class="filter__total">1</span>
+              </button>
+              <button class="filter" role="tab" aria-selected="false">
+                <span class="filter__label">Action required</span><span class="filter__total">0</span>
+              </button>
+              <button class="filter" role="tab" aria-selected="false">
+                <span class="filter__label">In review</span><span class="filter__total">0</span>
+              </button>
+              <button class="filter" role="tab" aria-selected="false">
+                <span class="filter__label">Deactivated</span><span class="filter__total">0</span>
+              </button>
+            </div>
+
+            <div class="tabletools">
+              <button class="chip"><img src="assets/icons/add-circle-outline.svg" alt="" />More filters</button>
+              <button class="btn-quiet">Export</button>
+            </div>
+
+            <table class="atable">
+              <colgroup>
+                <col style="width:28px" /><col style="width:150px" /><col style="width:113px" />
+                <col /><col style="width:91px" /><col style="width:83px" />
+                <col style="width:130px" /><col style="width:36px" />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th><span class="checkbox"></span></th>
+                  <th>Account</th>
+                  <th>Status</th>
+                  <th></th>
+                  <th class="is-num">Volume <img class="atable__sort" src="assets/icons/arrow-down-sort.svg" alt="descending" /></th>
+                  <th class="is-num">Balance</th>
+                  <th>Connected</th>
+                  <th class="atable__more"><img src="assets/icons/overflow.svg" alt="Column options" /></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr id="accountRow">
+                  <td><span class="checkbox"></span></td>
+                  <td class="atable__name">Furever</td>
+                  <td><span class="badge">Complete</span></td>
+                  <td></td>
+                  <td class="is-num">$21,844.23</td>
+                  <td class="is-num">$1,232.88</td>
+                  <td>May 24, 2022</td>
+                  <td class="atable__more"><img src="assets/icons/overflow.svg" alt="Row actions" /></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="tablefoot">
+              <span class="tablefoot__count">1 of 1 results</span>
+              <div class="tablefoot__nav">
+                <button class="pager" disabled>Previous</button>
+                <button class="pager">Next</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Page content · Connect overview -->
+        <section class="content content--connect" id="viewConnect">
+
+          <!-- Before a business model is chosen -->
+          <div class="connect-empty">
+            <div class="hero">
+              <div class="hero__pill">
+                <img src="assets/icons/connect-product.svg" alt="" />
+                <span>Connect</span>
+              </div>
+
+              <div class="hero__body">
+                <div class="hero__copy">
+                  <h1>Power your platform<br />with Connect</h1>
+                  <p>Onboard and manage users, process payments, and send global payouts—all while Stripe handles risk and compliance.</p>
+                </div>
+                <div class="hero__actions">
+                  <button class="btn btn--primary btn--md" id="getStartedBtn">Get started</button>
+                  <a class="btn btn--secondary btn--md" href="https://docs.stripe.com/connect" target="_blank" rel="noreferrer">View docs</a>
+                </div>
+              </div>
+            </div>
+
+            <div class="callouts">
+              <div class="callout">
+                <h2>Build a platform</h2>
+                <p>Facilitate direct payments between other businesses and their own customers.</p>
+                <a class="link">View docs</a>
+              </div>
+              <div class="callout">
+                <h2>Build a marketplace</h2>
+                <p>Collect payments from customers and pay them out to sellers or service providers.</p>
+                <a class="link">View docs</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Once the model is saved, the overview goes live (Figma 316:121474) -->
+          <div class="coview" id="connectOverview">
+            <div class="accounts__head">
+              <h1 class="page-title">Connect overview</h1>
+              <button class="btn btn--primary btn--sm btn--icon">
+                <i class="btn__icon btn__icon--add"></i>New
+              </button>
+            </div>
+
+            <div class="controls">
+              <span class="chip chip--plain">
+                <img src="assets/icons/co-data.svg" alt="" />Updated 12 min ago<i class="chip__dot"></i>
+              </span>
+              <span class="chip chip--plain">
+                Date range<i class="chip__sep"></i><b>Year to date</b>
+                <img src="assets/icons/co-chevron.svg" alt="" />
+              </span>
+              <span class="chip chip--plain">
+                <b>Monthly</b><img src="assets/icons/co-chevron.svg" alt="" />
+              </span>
+            </div>
+
+            <div class="cocols">
+              <div class="cocol">
+                <section class="cowidget">
+                  <div class="cowidget__head">
+                    <h2 class="cowidget__title">Payments volume</h2>
+                    <p class="cowidget__value">$0.00</p>
+                  </div>
+
+                  <div class="cochart">
+                    <div class="cochart__plot">
+                      <i class="cochart__rule cochart__rule--dash"></i>
+                      <i class="cochart__rule cochart__rule--axis"></i>
+                    </div>
+                    <span class="cochart__y cochart__y--top">$0</span>
+                    <span class="cochart__y cochart__y--mid">$0</span>
+                    <span class="cochart__y cochart__y--base">$0</span>
+                    <div class="cochart__months">
+                      <span><i></i>Jan</span><span><i></i>Feb</span><span><i></i>Mar</span>
+                      <span><i></i>Apr</span><span><i></i>May</span><span><i></i>Jun</span>
+                      <span><i></i>Jul</span>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="colist">
+                  <h3 class="colist__title">Top grossing accounts</h3>
+                  <div class="colist__rows">
+                    <div><span>Account 1</span><span>$0.00</span></div>
+                    <div><span>Account 2</span><span>$0.00</span></div>
+                    <div><span>Account 3</span><span>$0.00</span></div>
+                    <div><span>Account 4</span><span>$0.00</span></div>
+                    <div><span>Account 5</span><span>$0.00</span></div>
+                  </div>
+                </section>
+              </div>
+
+              <aside class="coside">
+                <h3 class="coside__title">Resources</h3>
+                <div class="cocard">
+                  <div class="cocard__copy">
+                    <h4>Power your platform<br />with Connect</h4>
+                    <p>Onboard and manage users, process payments, and send global payouts&mdash;all while Stripe handles risk and compliance.</p>
+                  </div>
+                  <a class="link" id="changeModelBtn">Change business model</a>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </section>
+
+        <!-- Page content · Home -->
+        <section class="content" id="viewHome">
+          <div class="content__head">
+            <h1 class="page-title">Today</h1>
+            <div class="rule"></div>
+          </div>
+
+          <div class="row row--today">
+            <div class="col col--chart">
+              <div class="metric">
+                <button class="metric__label">Gross volume <img src="assets/icons/pc-chevron-down.svg" alt="" /></button>
+                <p class="metric__value">$0.00</p>
+              </div>
+
+              <div class="chart">
+                <div class="chart__grid"></div>
+                <div class="chart__base"></div>
+              </div>
+              <div class="chart__axis"><span>12:00 AM</span><span>11:59 PM</span></div>
+
+              <div class="row row--split">
+                <div class="metric">
+                  <button class="metric__label">USD Balance <img src="assets/icons/pc-chevron-down.svg" alt="" /></button>
+                  <p class="metric__value metric__value--sm">$0.00</p>
+                </div>
+                <div class="metric">
+                  <span class="metric__label metric__label--plain">Payouts</span>
+                  <p class="metric__value metric__value--sm">$0.00</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- API keys card -->
+            <aside class="devcard" id="devcard">
+              <div class="devcard__head">
+                <span class="devcard__eyebrow">For developers</span>
+                <img class="devcard__close" src="assets/icons/pc-cancel.svg" alt="Dismiss" />
+              </div>
+              <h2 class="devcard__title">API keys</h2>
+              <dl class="devcard__keys">
+                <div><dt>Publishable</dt><dd>phkey_123819238y9</dd></div>
+                <div><dt>Secret key</dt><dd class="devcard__secret">••••••••••••••••<img src="assets/icons/pc-eye-open.svg" alt="Reveal" /></dd></div>
+              </dl>
+              <a class="link">View docs</a>
+            </aside>
+          </div>
+        </section>
+
+        <!-- Page content · Connected account detail (Figma 304:98889) -->
+        <section class="cad" id="viewAccount">
+          <div class="cadhead">
+            <button class="cadhead__back" id="cadBack" aria-label="Back to connected accounts">
+              <img src="assets/icons/cad-arrow-left.svg" alt="" />
+            </button>
+            <span class="cadhead__avatar"><img src="assets/icons/cad-stripe-s.svg" alt="" /></span>
+            <h1 class="cadhead__name">Furever</h1>
+            <span class="badge">Complete<img class="badge__check" src="assets/icons/badge-check.svg" alt="" /></span>
+
+            <div class="cadhead__right">
+              <span class="cadhead__id">Connect ID</span>
+              <img class="cadhead__copy" src="assets/icons/cad-clipboard.svg" alt="Copy Connect ID" />
+              <button class="cadhead__more" aria-label="More actions">
+                <img src="assets/icons/cad-more.svg" alt="" />
+              </button>
+            </div>
+          </div>
+
+          <div class="cad__body">
+            <nav class="cadnav">
+              <a class="cadnav__item" id="cadNavActivity">Activity</a>
+              <a class="cadnav__item">Profile</a>
+              <a class="cadnav__item">Payment methods</a>
+              <a class="cadnav__item">Settings</a>
+              <span class="cadnav__spacer"></span>
+              <a class="cadnav__item" id="cadNavPayments">Payments</a>
+            </nav>
+
+            <div class="cad__main" id="cadActivity">
+              <h2 class="cad__title">Activity</h2>
+
+              <div class="tabs">
+                <button class="tab is-current">Overview</button>
+                <button class="tab">Actions required</button>
+              </div>
+
+              <h3 class="cad__section">Balances</h3>
+              <div class="cad__rule"></div>
+              <dl class="balances">
+                <div><dt>USD total balance</dt><dd>$0.00 USD</dd></div>
+                <div><dt>Funds on hold</dt><dd>$0.00 USD</dd></div>
+                <div><dt>In transit to bank</dt><dd>$0.00 USD</dd></div>
+              </dl>
+
+              <h3 class="cad__section cad__section--movement">Money movement</h3>
+
+              <!-- Before any charge exists -->
+              <div class="promo">
+                <div class="promo__body">
+                  <div class="promo__copy">
+                    <h4>Connected account charges</h4>
+                    <p>When your users create charges, they&rsquo;ll appear here. You can add platform fees to connected account charges if you want to monetize transactions.</p>
+                  </div>
+                  <button class="btn btn--primary btn--md" id="testChargeBtn">Create test charge</button>
+                </div>
+              </div>
+
+              <!-- Once the test charge lands (Figma 314:100161) -->
+              <div class="mm" id="moneyMovement">
+                <div class="tabs tabs--sub">
+                  <button class="tab is-current">Payments</button>
+                  <button class="tab">Transfers</button>
+                  <button class="tab">Payouts</button>
+                  <button class="tab">Loans</button>
+                  <button class="tab">Financial account</button>
+                  <button class="tab">Collected fees</button>
+                </div>
+
+                <table class="mmtable">
+                  <colgroup>
+                    <col style="width:177px" /><col style="width:153px" /><col style="width:275px" />
+                    <col style="width:220px" /><col />
+                  </colgroup>
+                  <thead>
+                    <tr><th>Amount</th><th>Account</th><th>Description</th><th>Initiated</th><th>Est. arrival</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr id="paymentRow">
+                      <td><span class="mmtable__money">
+                        <span class="mmtable__amt">$500.00</span>
+                        <span class="mmtable__cur">USD</span>
+                        <span class="badge badge--paid">Paid</span>
+                      </span></td>
+                      <td>USAA &bull;&bull;&bull;&bull; 1234</td>
+                      <td class="mmtable__mono">PO_823Dkshd298lkiEIOds</td>
+                      <td>Apr 20, 2022, 5:39 AM</td>
+                      <td>Apr 24, 2022</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div class="mmfoot">
+                  <span class="mmfoot__count">Viewing <b>1</b> of <b>1</b></span>
+                  <div class="mmfoot__nav">
+                    <button class="pager" disabled>Previous</button>
+                    <button class="pager">Next</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- The log runs under the account whether or not it has charges -->
+              <section class="apilogs">
+                <h3 class="cad__section cad__section--logs">API logs</h3>
+                <div class="tabs tabs--sub">
+                  <button class="tab is-current">From your platform</button>
+                  <button class="tab">From this account</button>
+                </div>
+                <div class="logs">
+                  <div class="log"><span class="badge badge--neutral">200 OK</span><span class="log__verb">POST</span><span class="log__path">/v1/log/97458kjdjlskdjflkdncklo984989889</span><span class="log__time">3:40:21 AM</span></div>
+                  <div class="log"><span class="badge badge--neutral">200 OK</span><span class="log__verb">POST</span><span class="log__path">/v1/log/97458kjdjlskdjflkdncklo984989889</span><span class="log__time">3:40:21 AM</span></div>
+                  <div class="log"><span class="badge badge--neutral">200 OK</span><span class="log__verb">POST</span><span class="log__path">/v1/log/97458kjdjlskdjflkdncklo984989889</span><span class="log__time">3:40:21 AM</span></div>
+                  <div class="log"><span class="badge badge--neutral">200 OK</span><span class="log__verb">POST</span><span class="log__path">/v1/log/97458kjdjlskdjflkdncklo984989889</span><span class="log__time">3:40:21 AM</span></div>
+                  <div class="log"><span class="badge badge--neutral">200 OK</span><span class="log__verb">POST</span><span class="log__path">/v1/log/97458kjdjlskdjflkdncklo984989889</span><span class="log__time">3:40:21 AM</span></div>
+                </div>
+              </section>
+            </div>
+
+            <!-- Payment detail — the test charge that was just created (Figma 312:90172) -->
+            <div class="cad__main cad__main--pay" id="cadPayment">
+              <nav class="crumbs">
+                <a class="crumbs__link" id="crumbPayments">Payments</a>
+                <img src="assets/icons/pd-breadcrumb-chevron.svg" alt="" />
+              </nav>
+
+              <div class="paytitle">
+                <h2 class="paytitle__amount">$10.00 <span>USD</span></h2>
+                <span class="badge badge--sm">Succeeded</span>
+                <div class="paytitle__actions">
+                  <button class="abtn abtn--md"><img src="assets/icons/pd-refund.svg" alt="" />Refund</button>
+                  <button class="abtn abtn--md"><img src="assets/icons/pd-receipt.svg" alt="" />Receipt</button>
+                  <button class="abtn abtn--md abtn--only" aria-label="More actions"><img src="assets/icons/pd-more.svg" alt="" /></button>
+                </div>
+              </div>
+
+              <p class="paysub">Charged to <a class="link link--strong">Jane Doe</a> using
+                <span class="visa"><img src="assets/icons/pd-visa.svg" alt="" /></span> Visa &bull;&bull;&bull;&bull; 3077</p>
+
+              <div class="paycols">
+                <div class="paycol">
+                  <section class="pmod pmod--roomy">
+                    <div class="pmod__head">
+                      <h3 class="pmod__title">Recent activity</h3>
+                      <button class="abtn"><img src="assets/icons/pd-add.svg" alt="" />Note</button>
+                    </div>
+                    <div class="tl">
+                      <div class="tl__rail"><img class="tl__marker" src="assets/icons/pd-marker.svg" alt="" /></div>
+                      <div class="tl__entry">
+                        <div class="tl__copy">
+                          <p class="tl__title"><a class="link link--strong">Receipt</a> sent for payment</p>
+                          <p class="tl__meta">Automatically sent to jane@doe.com</p>
+                        </div>
+                        <span class="tl__time">Sept 18, 9:48 AM</span>
+                      </div>
+                    </div>
+                    <div class="tl">
+                      <div class="tl__rail"><img class="tl__marker tl__marker--done" src="assets/icons/pd-check.svg" alt="" /></div>
+                      <div class="tl__entry">
+                        <div class="tl__copy"><p class="tl__title">Payment settled for $100.91</p></div>
+                        <span class="tl__time">Sept 18, 9:47 AM</span>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section class="pmod">
+                    <div class="pmod__head">
+                      <h3 class="pmod__title">Payment breakdown</h3>
+                      <button class="abtn abtn--only" aria-label="Breakdown options"><img src="assets/icons/pd-module-more.svg" alt="" /></button>
+                    </div>
+                    <div class="pbrow">
+                      <span class="pbrow__label">Payment amount</span>
+                      <span class="pbrow__amt">+ $8.18</span><span class="pbrow__cur">USD</span>
+                    </div>
+                    <div class="pbrow">
+                      <span class="pbrow__label">Cactus practice processing fee <img class="pbrow__info" src="assets/icons/pd-info.svg" alt="" /></span>
+                      <span class="pbrow__amt">- $1.82</span><span class="pbrow__cur">USD</span>
+                    </div>
+                    <div class="pbrow pbrow--total">
+                      <span class="pbrow__label">Net amount</span>
+                      <span class="pbrow__amt">+ $10.00</span><span class="pbrow__cur">USD</span>
+                    </div>
+                  </section>
+
+                  <section class="pmod">
+                    <div class="pmod__head"><h3 class="pmod__title">Checkout items</h3></div>
+                    <table class="citems">
+                      <colgroup>
+                        <col style="width:203px" /><col style="width:80px" /><col style="width:84px" />
+                        <col style="width:110px" /><col style="width:104px" /><col />
+                      </colgroup>
+                      <thead>
+                        <tr><th>Product</th><th></th><th>Quantity</th><th>Pricing</th><th>SKU</th><th></th></tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td class="citems__product">
+                            <span class="citems__tile"><img src="assets/icons/pd-product.svg" alt="" /></span>
+                            <span class="citems__name">T-shirt</span>
+                          </td>
+                          <td><span class="badge badge--sm">Active</span></td>
+                          <td class="citems__muted">1</td>
+                          <td class="citems__muted">$100.00 USD</td>
+                          <td class="citems__muted">62061</td>
+                          <td class="citems__more"><img src="assets/icons/pd-module-more.svg" alt="Row actions" /></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </section>
+                </div>
+
+                <div class="paycol paycol--side">
+                  <section class="pmod">
+                    <div class="pmod__head">
+                      <h3 class="pmod__title">Details</h3>
+                      <button class="abtn abtn--only" aria-label="Edit details"><img src="assets/icons/pd-edit.svg" alt="" /></button>
+                    </div>
+                    <dl class="props">
+                      <div><dt>Description</dt><dd>Product sale</dd></div>
+                      <div><dt>ID</dt><dd>pi_12375013851030130</dd></div>
+                      <div><dt>Currency</dt><dd>USD</dd></div>
+                      <div><dt>Created date</dt><dd>Dec 1</dd></div>
+                    </dl>
+                  </section>
+
+                  <section class="pmod">
+                    <div class="pmod__head"><h3 class="pmod__title">Customers</h3></div>
+                    <div class="props">
+                      <div>
+                        <dt>Information</dt>
+                        <dl class="props__nested">
+                          <div><dt>Name</dt><dd>Stacy Wilson</dd></div>
+                          <div><dt>Email</dt><dd><a class="link link--strong">stacy.wilson@gmail.com</a></dd></div>
+                          <div><dt>Phone</dt><dd>503-867-5309</dd></div>
+                          <div><dt>Country</dt><dd>United States</dd></div>
+                        </dl>
+                      </div>
+                      <div>
+                        <dt>Payment history</dt>
+                        <dl class="props__nested">
+                          <div><dt>Total spend</dt><dd>$240.00</dd></div>
+                          <div><dt>MRR</dt><dd>$18.00</dd></div>
+                        </dl>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Guidance copy over the wash -->
+        <div class="guidance" id="guidance">
+          <h2>Next,&nbsp; choose<br />your business model</h2>
+          <p>We're starting in a sandbox—just copy your work to your live account when you're ready.</p>
+        </div>
+
+        <!-- Setup guide -->
+        <aside class="guide" id="guide">
+          <div class="guide__head">
+            <span class="guide__title">Setup guide</span>
+            <div class="guide__icons">
+              <img id="guideToggle" src="assets/icons/arrows-outward.svg" alt="Collapse or expand" />
+              <img src="assets/icons/cancel.svg" alt="Close" />
+            </div>
+          </div>
+
+          <div class="guide__bar">
+            <div class="guide__track"></div>
+            <div class="guide__progress" id="guideProgress"></div>
+          </div>
+
+          <div class="guide__summary">Next: <button class="guide__next" id="guideNext" data-route="#connect">Choose your business model</button></div>
+
+          <div class="guide__groups">
+            <div class="guide__group guide__group--open" data-group>
+              <button class="guide__row">
+                <span class="guide__grouptitle">Test Connect</span>
+                <span class="guide__chevs">
+                  <img class="guide__chev chev-up" src="assets/icons/chevron-up.svg" alt="" />
+                  <img class="guide__chev chev-down" src="assets/icons/chevron-down-8.svg" alt="" />
+                </span>
+              </button>
+              <div class="guide__tasks">
+                <button class="task is-next" id="taskBusinessModel">
+                  <span class="task__dot"></span><span class="task__label">Choose your business model</span>
+                </button>
+                <button class="task is-locked" id="taskTestAccount"><span class="task__dot"></span><span class="task__label">Create a test account</span></button>
+                <button class="task is-locked" id="taskTestCharge"><span class="task__dot"></span><span class="task__label">Create a test charge</span></button>
+                <button class="task is-locked" id="taskIntegrationGuide"><span class="task__dot"></span><span class="task__label">View your integration guide</span></button>
+              </div>
+            </div>
+
+            <div class="guide__group" data-group>
+              <button class="guide__row">
+                <span class="guide__grouptitle">Verify your business</span>
+                <span class="guide__chevs">
+                  <img class="guide__chev chev-up" src="assets/icons/chevron-up.svg" alt="" />
+                  <img class="guide__chev chev-down" src="assets/icons/chevron-down-8.svg" alt="" />
+                </span>
+              </button>
+              <div class="guide__tasks">
+                <button class="task" id="taskVerifyIdentity"><span class="task__dot"></span><span class="task__label">Verify your identity</span></button>
+                <div class="task"><span class="task__dot"></span><span class="task__label">Verify your business</span></div>
+              </div>
+            </div>
+
+            <div class="guide__group">
+              <div class="guide__row">
+                <span class="guide__grouptitle">Go live</span>
+                <img class="guide__chev guide__chev--lock" src="assets/icons/lock.svg" alt="" />
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <!-- Workbench taskbar -->
+      <footer class="taskbar" id="taskbar">
+        <div class="taskbar__brand">
+          <span>Workbench</span>
+          <span class="taskbar__badge">~</span>
+        </div>
+        <div class="taskbar__utils">
+          <img src="assets/icons/tb-explorer.svg" alt="Explorer" />
+          <i class="taskbar__divider"></i>
+          <img src="assets/icons/tb-transfer.svg" alt="Transfers" />
+          <img src="assets/icons/tb-webhook.svg" alt="Webhooks" />
+          <i class="taskbar__divider"></i>
+          <img src="assets/icons/tb-settings.svg" alt="Settings" />
+          <i class="taskbar__divider"></i>
+          <img class="is-sm" src="assets/icons/tb-chevron-down.svg" alt="Minimise" />
+          <img class="is-sm" src="assets/icons/tb-arrows-outward.svg" alt="Expand" />
+          <img class="is-sm" src="assets/icons/tb-cancel.svg" alt="Close" />
+        </div>
+      </footer>
+
+      <!-- ───────── Business model modal ───────── -->
+      <div class="modal" id="modelModal" role="dialog" aria-modal="true" aria-labelledby="modelTitle">
+        <button class="modal__close" id="modelClose" aria-label="Close">
+          <img src="assets/icons/cancel.svg" alt="" />
+        </button>
+
+        <div class="modal__body">
+          <header class="modal__head">
+            <h2 id="modelTitle">Choose your business model</h2>
+            <p>The model you choose will determine how transactions are handled. Learn more</p>
+          </header>
+
+          <div class="models" role="radiogroup" aria-label="Business model">
+            <button class="model" data-model="platform" role="radio" aria-checked="false">
+              <div class="model__diagram">
+                <div class="model__flow">
+                  <span class="node"><img class="icon-off" src="assets/icons/bm-person.svg" alt="" /><img class="icon-on" src="assets/icons/bm-person-sel.svg" alt="" /><em>Buyers</em></span>
+                  <img class="model__arrow" src="assets/icons/bm-arrow-right.svg" alt="" />
+                  <span class="node"><img class="icon-off" src="assets/icons/bm-business.svg" alt="" /><img class="icon-on" src="assets/icons/bm-business-sel.svg" alt="" /><em>Merchants</em></span>
+                  <img class="model__arrow" src="assets/icons/bm-arrow-right.svg" alt="" />
+                  <span class="node"><img class="icon-off" src="assets/icons/bm-platform.svg" alt="" /><img class="icon-on" src="assets/icons/bm-platform-sel.svg" alt="" /><em>Cactus Practice</em></span>
+                </div>
+              </div>
+              <div class="model__meta">
+                <h3>Platform</h3>
+                <p>Merchants will collect payments directly.</p>
+              </div>
+            </button>
+
+            <button class="model" data-model="marketplace" role="radio" aria-checked="false">
+              <div class="model__diagram">
+                <div class="model__flow">
+                  <span class="node"><img class="icon-off" src="assets/icons/bm-person.svg" alt="" /><img class="icon-on" src="assets/icons/bm-person-sel.svg" alt="" /><em>Buyers</em></span>
+                  <img class="model__arrow" src="assets/icons/bm-arrow-right.svg" alt="" />
+                  <span class="node"><img class="icon-off" src="assets/icons/bm-platform.svg" alt="" /><img class="icon-on" src="assets/icons/bm-platform-sel.svg" alt="" /><em>Cactus Practice</em></span>
+                  <img class="model__arrow" src="assets/icons/bm-arrow-right.svg" alt="" />
+                  <span class="node"><img class="icon-off" src="assets/icons/bm-business.svg" alt="" /><img class="icon-on" src="assets/icons/bm-business-sel.svg" alt="" /><em>Merchants</em></span>
+                </div>
+              </div>
+              <div class="model__meta">
+                <h3>Marketplace</h3>
+                <p>Sell to buyers yourself and send funds to recipients.</p>
+              </div>
+            </button>
+          </div>
+
+          <div class="modal__actions">
+            <button class="btn btn--primary btn--md" id="modelSave" disabled>Save</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ───────── Test connected account modal ───────── -->
+      <div class="modal modal--account" id="accountModal" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
+        <button class="modal__close" id="accountClose" aria-label="Close">
+          <img src="assets/icons/cancel.svg" alt="" />
+        </button>
+
+        <div class="modal__body">
+          <header class="modal__head modal__head--wide">
+            <h2 id="accountTitle">Create a test connected account</h2>
+            <p>Connected account owners need to provide valid identity information before they can charge their customers. We'll use test data to create this account. <a class="link">View docs</a></p>
+          </header>
+
+          <div class="stagepanel">
+            <!-- Mock merchant dashboard -->
+            <div class="fakeui">
+              <div class="fakeui__head">
+                <span class="fakeui__icon"><img src="assets/icons/furever-business.svg" alt="" /></span>
+                <p class="fakeui__name">Furever</p>
+              </div>
+              <dl class="fakeui__table">
+                <div><dt>Stripe dashboard experience</dt><dd>Embedded Stripe components</dd></div>
+                <div><dt>Stripe fees</dt><dd>Connected account pays fee's</dd></div>
+                <div><dt>Requirement collection</dt><dd>Stripe</dd></div>
+                <div><dt>Negative balance liability</dt><dd>Stripe</dd></div>
+              </dl>
+            </div>
+
+            <!-- Floating stat card -->
+            <div class="floatcard">
+              <p class="floatcard__title">Account activity</p>
+              <dl class="floatcard__stats">
+                <div><dt>Payments</dt><dd>Enabled</dd></div>
+                <div><dt>Payouts</dt><dd>Enabled</dd></div>
+                <div><dt>Balance</dt><dd>$3,044.00</dd></div>
+              </dl>
+            </div>
+          </div>
+
+          <div class="modal__actions">
+            <button class="btn btn--primary btn--md" id="accountContinue">Continue</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ───────── Test charge modal (Figma 312:92005) ───────── -->
+      <div class="modal modal--charge" id="chargeModal" role="dialog" aria-modal="true" aria-labelledby="chargeTitle">
+        <button class="modal__close" id="chargeClose" aria-label="Close">
+          <img src="assets/icons/cancel.svg" alt="" />
+        </button>
+
+        <div class="modal__body">
+          <header class="modal__head modal__head--wide">
+            <h2 id="chargeTitle">Next, we&rsquo;ll create a test charge</h2>
+            <p>We&rsquo;ll create a direct charge, which is most common for a platform. When a connected account charges a buyer, the platform usually includes a processing fee. <a class="link link--strong">View docs</a></p>
+          </header>
+
+          <div class="chargeviz">
+            <!-- Faint page furniture the receipt sits over -->
+            <div class="chargeviz__ghost">
+              <span class="ghost"><i class="ghost__tile"></i></span>
+              <span class="ghost"><i class="ghost__tile"></i><i class="ghost__bar ghost__bar--wide"></i></span>
+              <span class="ghost"><i class="ghost__tile"></i><i class="ghost__bar"></i><i class="ghost__bar"></i><i class="ghost__bar"></i></span>
+            </div>
+            <div class="chargeviz__line"></div>
+
+            <div class="receipt">
+              <img class="receipt__card" src="assets/receipt-card.png" alt="" />
+              <span class="receipt__badge">
+                <img class="receipt__badgebg" src="assets/icons/charge-badge.svg" alt="" />
+                <img class="receipt__badgeicon" src="assets/icons/charge-invoice.svg" alt="" />
+              </span>
+              <p class="receipt__total">$10.00</p>
+              <dl class="receipt__lines">
+                <div><dt>Platform fee</dt><dd>$2.00</dd></div>
+                <div><dt>Stripe processing fee</dt><dd>$1.82</dd></div>
+                <div><dt>Connected account receives</dt><dd>$8.18</dd></div>
+              </dl>
+            </div>
+          </div>
+
+          <div class="modal__actions">
+            <button class="btn btn--primary btn--md" id="chargeCreate">Create test charge</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ───────── Identity verification modal (Figma 314:98271) ───────── -->
+      <div class="modal modal--identity" id="identityModal" role="dialog" aria-modal="true" aria-labelledby="identityTitle">
+        <div class="idm">
+          <header class="idm__head">
+            <button class="idm__close" id="identityClose" aria-label="Close">
+              <img src="assets/icons/id-cancel.svg" alt="" />
+            </button>
+          </header>
+
+          <div class="idm__hero">
+            <div class="idm__lockup">
+              <span class="idm__tile"><img src="assets/icons/id-hero.svg" alt="" /></span>
+              <span class="idm__dots"></span>
+              <span class="idm__tile idm__tile--brand"><img src="assets/icons/id-stripe.svg" alt="" /></span>
+            </div>
+            <h2 class="idm__title" id="identityTitle">Verify your identity</h2>
+          </div>
+
+          <div class="idm__points">
+            <div class="idm__point">
+              <img src="assets/icons/id-camera.svg" alt="" />
+              <p>You&rsquo;ll scan a valid <u>photo ID</u>, take a selfie, and provide personal information.</p>
+            </div>
+            <div class="idm__point">
+              <img src="assets/icons/id-verify.svg" alt="" />
+              <p>Stripe uses biometric technology on your images to <u>make sure it&rsquo;s you</u>. You can delete your data at any time.</p>
+            </div>
+          </div>
+
+          <footer class="idm__foot">
+            <p class="idm__fine"><u>Stripe Privacy Policy</u> &bull; <u>English (United States)</u></p>
+            <button class="idm__btn idm__btn--primary" id="identityAgree">Agree and continue</button>
+            <button class="idm__btn idm__btn--secondary" id="identityDecline">Decline</button>
+          </footer>
+        </div>
+      </div>
+
+      <!-- ───────── Onboarding dialog ───────── -->
+      <div class="backdrop" id="backdrop"></div>
+
+      <div class="dialog" id="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
+        <div class="dialog__left">
+
+          <!-- Step 1 · business details (Figma 295:51969) -->
+          <div class="dialog__step" id="dialogStep1">
+            <div class="dialog__body">
+              <div class="dialog__intro">
+                <h2 id="dialogTitle">Let's get started</h2>
+                <p>Answer a few questions about your business to customize your setup. You can make changes later if you want.</p>
+              </div>
+
+              <div class="fields">
+                <div class="field">
+                  <label for="bizName">Business name</label>
+                  <input id="bizName" type="text" autocomplete="off" spellcheck="false" />
+                </div>
+                <div class="field">
+                  <label for="bizSite">Business website <span class="field__opt">(optional)</span></label>
+                  <input id="bizSite" type="text" autocomplete="off" spellcheck="false" />
+                </div>
+              </div>
+            </div>
+
+            <div class="dialog__actions">
+              <button class="btn btn--primary btn--block" id="continueBtn">Continue</button>
+            </div>
+          </div>
+
+          <!-- Step 2 · how to start (Figma 295:51892) -->
+          <div class="dialog__step" id="dialogStep2">
+            <div class="dialog__body">
+              <div class="dialog__intro dialog__intro--back">
+                <button class="backlink" id="dialogBack">
+                  <img src="assets/icons/dlg-arrow-left.svg" alt="" />Back
+                </button>
+                <h2>How do you want to start?</h2>
+                <p>You can also add other features later if you need them.</p>
+              </div>
+
+              <div class="startcards">
+                <label class="startcard">
+                  <input type="checkbox" />
+                  <span class="startcard__box"><img src="assets/icons/dlg-check.svg" alt="" /></span>
+                  <span class="startcard__copy">
+                    <b>One-off payments</b>
+                    <span>Accept payments for products and services using a checkout page or invoices.</span>
+                  </span>
+                </label>
+                <label class="startcard">
+                  <input type="checkbox" />
+                  <span class="startcard__box"><img src="assets/icons/dlg-check.svg" alt="" /></span>
+                  <span class="startcard__copy">
+                    <b>Recurring payments</b>
+                    <span>Offer subscriptions and bill customers for ongoing usage and services.</span>
+                  </span>
+                </label>
+                <label class="startcard">
+                  <input type="checkbox" />
+                  <span class="startcard__box"><img src="assets/icons/dlg-check.svg" alt="" /></span>
+                  <span class="startcard__copy">
+                    <b>Platform or marketplace payments</b>
+                    <span>Use Connect to manage payments and payouts for your users.</span>
+                  </span>
+                </label>
+              </div>
+
+              <button class="moreopts">More options <img src="assets/icons/dlg-chevron-down.svg" alt="" /></button>
+            </div>
+
+            <div class="dialog__actions">
+              <button class="btn btn--primary btn--block" id="goDashboardBtn" disabled>Go to Dashboard</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="dialog__right" id="dialogRight">
+          <img class="dialog__wash" src="assets/preview-wash.png" alt="" />
+          <div class="preview" id="preview">
+            <img class="preview__paper" src="assets/preview-card.png" alt="" />
+            <div class="preview__head">
+              <div class="preview__logo" id="previewLogo"></div>
+              <p class="preview__name" id="previewName">Business name</p>
+            </div>
+            <div class="preview__chip" id="previewChip"><i class="preview__dot"></i><span>www.example.com</span></div>
+            <img class="preview__vector" src="assets/icons/card-vector.svg" alt="" />
+            <img class="preview__vector preview__vector--lit" src="assets/icons/card-vector-lit.svg" alt="" />
+            <img class="preview__stripe" src="assets/icons/stripe-logo.svg" alt="Stripe" />
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
