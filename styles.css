@@ -2536,22 +2536,30 @@ button.task:hover { background: rgba(0,39,77,0.045); }
   100% { transform: scale(1); }
 }
 
-/* Connect mark (Figma 297:56887) — rides the card's bottom-left corner,
-   opposite the Stripe wordmark, once the platform option is ticked. */
-.preview__connect {
+/* Product marks (Figma 295:51959, 295:51960, 297:56887) — ride the card's
+   bottom-left corner, opposite the Stripe wordmark, one per product ticked on
+   step two. Several sit 16px apart, left to right in the order they're listed. */
+.preview__marks {
   position: absolute;
   left: 16px;
   bottom: 16px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+/* Out of flow until picked, so the gap only counts the marks on show */
+.preview__mark {
+  display: none;
   width: 16px;
   height: 16px;
-  z-index: 1;
-  opacity: 0;
-  transform: scale(0.8);
-  transition:
-    opacity   var(--t-base) var(--ease),
-    transform var(--t-base) var(--ease);
+  animation: mark-in var(--t-base) var(--ease) both;
 }
-.preview.is-platform .preview__connect { opacity: 1; transform: none; }
+.preview__mark.is-on { display: block; }
+@keyframes mark-in {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: none; }
+}
 
 .preview__vector { position: absolute; right: 15px; bottom: 47px; width: 268px; height: 272px; }
 .preview__stripe { position: absolute; right: 14px; bottom: 10px; width: 60px; height: 25px; }

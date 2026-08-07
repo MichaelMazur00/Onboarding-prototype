@@ -516,12 +516,15 @@
   const startBoxes  = $$('.startcard input');
   const goDashboard = $('#goDashboardBtn');
 
-  const platformBox = $('#startPlatform');   // `preview` is declared above
+  const startMarks = $$('.preview__mark');   // `preview` is declared above
 
   const syncStartOptions = () => {
     goDashboard.disabled = !startBoxes.some(b => b.checked);
-    // Picking the platform option brands the card with the Connect mark
-    preview.classList.toggle('is-platform', platformBox.checked);
+    // Each product picked adds its mark to the card, in the order they're listed
+    startMarks.forEach(mark => {
+      const box = startBoxes.find(b => b.dataset.product === mark.dataset.product);
+      mark.classList.toggle('is-on', !!box && box.checked);
+    });
   };
   startBoxes.forEach(b => b.addEventListener('change', syncStartOptions));
 
