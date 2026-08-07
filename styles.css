@@ -12,6 +12,7 @@
   --text-subdued:      #596171;   /* Text/Subdued */
   --text-action:       #533AFD;   /* Text/Action Primary */
   --neutral-900:       #21252C;
+  --neutral-700:       #474E5A;
   --neutral-300:       #99A5B8;
   --neutral-200:       #B6C0CD;
   --neutral-100:       #D8DEE4;
@@ -340,6 +341,56 @@ body.is-onboarded .account__initial { opacity: 1; }
 .reveal.is-open { grid-template-rows: 1fr; }
 .reveal__inner { min-height: 0; overflow: hidden; }
 
+/* ───────── Tooltip (Figma 314:97465) ─────────
+   Fixed and body-level, positioned from script. It cannot be parented to what
+   it describes: the setup guide clips its own overflow to keep the collapse
+   clean, and at 288px it is narrower than the tooltip in any case.
+   Laid out at all times rather than display:none — the script measures it to
+   place it, and a box with no layout has no width to measure. */
+.tooltip {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 5;                   /* over the guide's 3, under the modal scrim's 8 */
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: var(--neutral-700);
+  color: var(--surface);
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: -0.15px;
+  white-space: nowrap;
+  /* Figma's two drop shadows. box-shadow rather than filter: the shape is a
+     plain rounded rect, so the result is identical without rasterising the
+     layer — which would also flatten the transform below into a repaint. */
+  box-shadow:
+    0 2px 2.5px rgba(64,68,82,0.08),
+    0 3px 4.5px rgba(64,68,82,0.08);
+  pointer-events: none;         /* never eats the hover that summoned it */
+
+  /* Grows out of the step it describes rather than out of its own middle.
+     Written from script: clamping to the viewport pushes the box off centre,
+     so the anchor is only known once it has been placed. */
+  transform-origin: var(--tip-origin, 50% 100%);
+  opacity: 0;
+  transform: scale(0.96);       /* not scale(0) — nothing arrives out of nothing */
+  /* The resting rule is the exit. It runs quicker than the entrance: the line
+     has been read by the time the pointer leaves, and a tooltip that takes as
+     long to go as it did to arrive reads as lag. */
+  transition:
+    opacity   calc(120ms * var(--speed)) var(--ease),
+    transform calc(120ms * var(--speed)) var(--ease);
+}
+.tooltip.is-on {
+  opacity: 1;
+  transform: none;
+  transition-duration: var(--t-fast);
+}
+/* Sweeping down the locked steps, the question has already been answered once,
+   so the tooltip moves to the next row without replaying its entrance. Placed
+   after .is-on deliberately — equal specificity, so this has to win on order. */
+.tooltip.is-instant { transition-duration: 0ms; }
+
 /* ───────── Sidebar ───────── */
 
 .sidebar {
@@ -612,8 +663,13 @@ body.is-arriving .surface { animation: page-in var(--t-base) var(--ease-enter); 
   font-weight: 600;
 }
 
-/* Connected accounts (Figma 304:98787) — no product pill, tighter inset */
-.hero--plain { padding: 88px 72px; min-height: 370px; }
+/* Connected accounts (Figma 304:98787) — the same hero without the product pill.
+   The plainer hero differs on the vertical axis only. Its headline, body and
+   CTA keep the base 99px inset, so the two empty states start on the same
+   line — a modifier that also moved the copy sideways left them disagreeing
+   by 27px on pages the user crosses between. The Connect pill is positioned
+   against the hero's own edges, so none of this reaches it. */
+.hero--plain { padding-block: 88px; min-height: 370px; }
 
 .hero__body { display: flex; flex-direction: column; gap: 22px; align-items: flex-start; max-width: 720px; }
 .hero__body--narrow { max-width: 533px; }
@@ -1965,10 +2021,15 @@ button.guide__row { cursor: pointer; }
   position: relative;
   transition: background var(--t-fast) var(--ease);
 }
-/* Tasks that navigate are buttons; the rest are inert divs */
+/* Every task is a button now — the ones that go nowhere yet are held back by
+   .is-locked below, not by being inert markup */
 button.task { cursor: pointer; }
 button.task:hover { background: rgba(0,39,77,0.045); }
+/* A locked step is still a hover target — that is how its tooltip is reached —
+   but it offers none of the affordances of one that goes somewhere. */
 .task.is-locked { color: var(--neutral-300); }
+button.task.is-locked { cursor: default; }
+button.task.is-locked:hover { background: none; }
 .task__dot {
   width: 12px; height: 12px;
   flex: none;
@@ -2617,21 +2678,41 @@ button.task:hover { background: rgba(0,39,77,0.045); }
   left: 16px;
   bottom: 16px;
   z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  height: 16px;
+  --mark-step: 32px;            /* the 16px mark plus the 16px between them */
 }
-/* Out of flow until picked, so the gap only counts the marks on show */
+/* Every mark is in the row at all times, out of flow, placed by transform at
+   the slot it holds — `--slot` counts the picked marks ahead of it, written
+   from script. Laying them out instead (flex, display toggled) would mean a
+   new pick shoved its neighbours sideways within one frame; here nothing the
+   marks do touches layout, so the row makes room by sliding.
+   A mark waiting its turn is parked at the slot it would take, so it fades up
+   in place rather than arriving from somewhere it never was. */
 .preview__mark {
-  display: none;
+  position: absolute;
+  left: 0;
+  top: 0;
   width: 16px;
   height: 16px;
-  animation: mark-in var(--t-base) var(--ease-enter) both;
+  pointer-events: none;
+  /* Both states carry the same two functions in the same order, so the two
+     transforms interpolate directly instead of going via a matrix. */
+  transform: translateX(calc(var(--slot, 0) * var(--mark-step))) scale(0.9);
+  opacity: 0;
+  /* Transitions, not a keyframe: ticking a box off and straight back on
+     retargets from wherever the mark had got to. The resting rule is the
+     exit, and it is quicker than the entrance — a mark leaving is a
+     correction, and corrections should be over with.
+     One curve and one duration across both properties keeps the slide and
+     the fade locked to each other. */
+  transition:
+    opacity   var(--t-fast) var(--ease-enter),
+    transform var(--t-fast) var(--ease-enter);
 }
-.preview__mark.is-on { display: block; }
-@keyframes mark-in {
-  from { opacity: 0; transform: scale(0.8); }
-  to   { opacity: 1; transform: none; }
+.preview__mark.is-on {
+  opacity: 1;
+  transform: translateX(calc(var(--slot, 0) * var(--mark-step))) scale(1);
+  transition-duration: var(--t-mid);
 }
 
 .preview__vector { position: absolute; right: 15px; bottom: 47px; width: 268px; height: 272px; }
@@ -2733,8 +2814,16 @@ button.task:hover { background: rgba(0,39,77,0.045); }
   .task.is-done .task__label,
   .preview__chip.is-bump,
   .guide__group--open .guide__tasks,
-  .preview__mark,
   .task.is-done .task__dot::before { animation: none !important; }
+
+  /* Product marks take their slot instantly and only the fade survives. Their
+     transform can't simply be dropped the way the ones below are — it is what
+     places them along the row, so it is the scale that goes and the slide that
+     stops being animated. */
+  .preview__mark {
+    transform: translateX(calc(var(--slot, 0) * var(--mark-step))) !important;
+    transition-property: opacity !important;
+  }
 
   /* The tick's resting state is scale(0) — its animation supplied the end
      state, so without it the checkmark has to be placed directly. */
@@ -2746,6 +2835,7 @@ button.task:hover { background: rgba(0,39,77,0.045); }
   /* Transitions that travel. The opacity halves of these still run. */
   .modal, .modal.is-leaving,
   .dialog, .dialog.is-leaving,
+  .tooltip,
   .preview__logo.is-filled,
   .btn:hover, .btn:active,
   .model:active,

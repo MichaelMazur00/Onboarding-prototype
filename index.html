@@ -68,7 +68,7 @@
 
             <div class="navgroup">
               <span class="navheading">Products</span>
-              <a class="navitem navitem--toggle" id="navConnect"><span class="navitem__icon"><img src="assets/icons/platform.svg" alt="" /></span><span class="navitem__label">Connect</span><span class="navitem__chev"><img class="chev-down" src="assets/icons/chevron-down.svg" alt="" /><img class="chev-up" src="assets/icons/nav-chevron-up.svg" alt="" /></span></a>
+              <a class="navitem navitem--toggle" id="navConnect"><span class="navitem__icon"><img class="icon-on" src="assets/icons/platform-active.svg" alt="" /><img class="icon-off" src="assets/icons/platform.svg" alt="" /></span><span class="navitem__label">Connect</span><span class="navitem__chev"><img class="chev-down" src="assets/icons/chevron-down.svg" alt="" /><img class="chev-up" src="assets/icons/nav-chevron-up.svg" alt="" /></span></a>
               <div class="reveal subnav" id="connectSubnav">
                 <div class="reveal__inner subnav__inner">
                   <a class="subnav__item" id="navOverview">Overview</a>
@@ -658,9 +658,9 @@
                   <button class="task is-next" id="taskBusinessModel">
                     <span class="task__dot"></span><span class="task__label">Choose your business model</span>
                   </button>
-                  <button class="task is-locked" id="taskTestAccount"><span class="task__dot"></span><span class="task__label">Create a test account</span></button>
-                  <button class="task is-locked" id="taskTestCharge"><span class="task__dot"></span><span class="task__label">Create a test charge</span></button>
-                  <button class="task is-locked" id="taskIntegrationGuide"><span class="task__dot"></span><span class="task__label">View your integration guide</span></button>
+                  <button class="task is-locked" id="taskTestAccount" aria-disabled="true"><span class="task__dot"></span><span class="task__label">Create a test account</span></button>
+                  <button class="task is-locked" id="taskTestCharge" aria-disabled="true"><span class="task__dot"></span><span class="task__label">Create a test charge</span></button>
+                  <button class="task is-locked" id="taskIntegrationGuide" aria-disabled="true"><span class="task__dot"></span><span class="task__label">View your integration guide</span></button>
                 </div>
               </div>
 
@@ -674,7 +674,7 @@
                 </button>
                 <div class="guide__tasks">
                   <button class="task" id="taskVerifyIdentity"><span class="task__dot"></span><span class="task__label">Verify your identity</span></button>
-                  <div class="task"><span class="task__dot"></span><span class="task__label">Verify your business</span></div>
+                  <button class="task" id="taskVerifyBusiness"><span class="task__dot"></span><span class="task__label">Verify your business</span></button>
                 </div>
               </div>
 
@@ -993,6 +993,11 @@
 
     </div>
   </main>
+
+  <!-- Tooltip (Figma 314:97465) — one shared element, moved to whatever is
+       hovered. Outside .stage so `position: fixed` can never be trapped by an
+       ancestor transform, and so the guide's own clipping doesn't cut it off. -->
+  <div class="tooltip" id="tooltip" role="tooltip" aria-hidden="true"></div>
 
   <script src="app.js"></script>
 </body>

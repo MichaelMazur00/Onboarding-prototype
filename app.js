@@ -57,7 +57,11 @@
     document.body.dataset.view = view;
 
     if (IN_CONNECT(view)) {
-      expanded = true;                          // landing on the page reveals its nav
+      // Arriving in the section reveals its pages — but only on arrival. Every
+      // render used to reassert this, which meant the Connect toggle could
+      // never close while one of its own pages was open: the click flipped the
+      // flag and the render that followed flipped it straight back.
+      if (!IN_CONNECT(lastView)) expanded = true;
       // The guide rides along collapsed, then stays expanded on whichever page
       // just had a task completed on it (Figma 304:97049 / 306:58864).
       const done = document.body.classList;
@@ -81,6 +85,12 @@
     cadNavPayments.classList.toggle('is-current', view === 'payment');
     navConnect.classList.toggle('is-expanded', expanded);
     subnav.classList.toggle('is-open', expanded);
+
+    // Collapsed, Connect has to answer for the page itself — the child that
+    // was carrying the selected state has just been folded away, and a section
+    // holding the current page with nothing marked reads as nowhere. Open, it
+    // stays neutral and lets Overview or Connected accounts hold it.
+    navConnect.classList.toggle('is-current', IN_CONNECT(view) && !expanded);
   }
 
   $('#guideToggle').addEventListener('click', () =>
@@ -203,7 +213,10 @@
   guideNext.addEventListener('click', () => {
     if (guideNext.dataset.route) go(guideNext.dataset.route);
   });
-  $('#verifyBtn').addEventListener('click', openDialog);
+  // The banner's button says "Verify your business", so it goes where the
+  // guide's step of that name goes. Referenced lazily — the modal is declared
+  // further down, and only the click needs it to exist.
+  $('#verifyBtn').addEventListener('click', () => openLayer(identityModal));
 
   /* ── Business model modal ──────────────── */
 
@@ -282,7 +295,10 @@
   // Opens over whichever page you're on, on the shared backdrop.
   const identityModal = $('#identityModal');
 
+  // Both verification steps open the same sheet — identity is what the
+  // business is verified through, so they are one journey from here.
   $('#taskVerifyIdentity').addEventListener('click', () => openLayer(identityModal));
+  $('#taskVerifyBusiness').addEventListener('click', () => openLayer(identityModal));
   $('#identityClose').addEventListener('click', closeLayer);
   $('#identityDecline').addEventListener('click', closeLayer);
   $('#identityAgree').addEventListener('click', closeLayer);
@@ -390,13 +406,17 @@
       if (!el) return;
       el.classList.remove('is-next');
       if (i <= index) {
-        el.classList.remove('is-locked');
+        unlock(el);
         el.classList.add('is-done');
       } else if (i === index + 1) {
-        el.classList.remove('is-locked');
+        unlock(el);
         el.classList.add('is-unlocked');
       }
     });
+
+    // A step that unlocks under the pointer would otherwise keep the tooltip
+    // that was explaining why it couldn't be used.
+    hideTip();
 
     // The next-up line tracks the first incomplete task; the verify steps
     // have nowhere to route to, so it just names them.
@@ -412,6 +432,131 @@
 
     guide.classList.remove('is-collapsed');
   }
+
+  /* ── Locked steps ──────────────────────── */
+
+  // A locked step is inert, but it still has to answer for itself, so it stays
+  // a hover target and explains what would unlock it. The obvious way to make
+  // it inert — the `disabled` attribute — is the one that cannot work here:
+  // disabled buttons fire no pointer events, so the tooltip would never open.
+  // Hence aria-disabled, and a click swallowed before it reaches the row's own
+  // handler. Capture on the guide gets there first without every handler
+  // having to check for itself.
+  guide.addEventListener('click', e => {
+    if (e.target.closest('.task.is-locked')) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, true);
+
+  const unlock = el => {
+    el.classList.remove('is-locked');
+    el.removeAttribute('aria-disabled');
+  };
+
+  /* ── Tooltip ───────────────────────────── */
+
+  const tooltip = $('#tooltip');
+  const TIP_GAP   = 8;       // clearance from the trigger, and from the viewport
+  const TIP_DELAY = 300;     // a pointer crossing the guide shouldn't summon it
+  const TIP_GRACE = 300;     // ...but one just dismissed is still mid-thought
+
+  let tipFor = null;         // the step it is for, pending or shown
+  let tipTimer = null;
+  let tipClosedAt = -Infinity;
+
+  // The guide unlocks in order, so every locked step — however far down — is
+  // waiting on the same one thing: the step at the front of the queue. They
+  // all name it rather than each naming the row above it, because pointing at
+  // another locked step would only move the question along.
+  function tipText() {
+    const next = TASKS.find(t => t.el && !t.el.classList.contains('is-done'));
+    return next ? `${next.label} first` : '';
+  }
+
+  function showTip(el) {
+    if (tipFor === el) return;
+    const text = tipText();
+    if (!text) return;
+
+    // Warm: one is already up, or one closed a moment ago. The question has
+    // been answered once, so asking it again of the step below shouldn't cost
+    // another wait — the tooltip moves without replaying. Sweeping three
+    // locked steps should read as one answer following the pointer, not three.
+    const warm = tooltip.classList.contains('is-on') ||
+                 performance.now() - tipClosedAt < TIP_GRACE;
+
+    clearTimeout(tipTimer);
+    if (tipFor) tipFor.removeAttribute('aria-describedby');
+    tipFor = el;
+
+    if (warm) placeTip(el, text, true);
+    else tipTimer = setTimeout(() => placeTip(el, text, false), TIP_DELAY);
+  }
+
+  function placeTip(el, text, instant) {
+    tooltip.textContent = text;
+    tooltip.setAttribute('aria-hidden', 'false');
+    el.setAttribute('aria-describedby', 'tooltip');
+
+    // Measured after the text lands: the tooltip sizes to its content, so its
+    // width isn't known until the string is in it.
+    const r = el.getBoundingClientRect();
+    const w = tooltip.offsetWidth;
+    const h = tooltip.offsetHeight;
+
+    // Centred over the step, then held inside the viewport — the guide sits
+    // 24px off the right edge and is narrower than the tooltip, so centring
+    // alone would hang it off the screen.
+    const mid  = r.left + r.width / 2 - w / 2;
+    const left = Math.min(Math.max(TIP_GAP, mid), innerWidth - w - TIP_GAP);
+
+    tooltip.style.left = `${Math.round(left)}px`;
+    tooltip.style.top  = `${Math.round(r.top - h - TIP_GAP)}px`;
+
+    // The scale grows from where the tooltip is pinned — the step's centre,
+    // along the bottom edge — which the clamp above has usually moved off the
+    // tooltip's own middle.
+    const anchor = Math.round(r.left + r.width / 2 - left);
+    tooltip.style.setProperty('--tip-origin', `${anchor}px 100%`);
+
+    tooltip.classList.toggle('is-instant', instant);
+    tooltip.classList.add('is-on');
+  }
+
+  function hideTip() {
+    clearTimeout(tipTimer);
+    if (!tipFor) return;
+    tipFor.removeAttribute('aria-describedby');
+    tipFor = null;
+    if (tooltip.classList.contains('is-on')) tipClosedAt = performance.now();
+    tooltip.classList.remove('is-on', 'is-instant');
+    tooltip.setAttribute('aria-hidden', 'true');
+  }
+
+  // Pointer and keyboard both open it, per the component's own guidance.
+  // Delegated on the guide via mouseover/focusin rather than mouseenter/focus,
+  // which don't bubble and so can't be delegated at all.
+  // The pointer half is gated on real hover: a tap fires mouseover with no
+  // mouseleave behind it, which would strand the tooltip on screen.
+  if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    guide.addEventListener('mouseover', e => {
+      const locked = e.target.closest('.task.is-locked');
+      locked ? showTip(locked) : hideTip();
+    });
+    guide.addEventListener('mouseleave', hideTip);
+  }
+  guide.addEventListener('focusin', e => {
+    const locked = e.target.closest('.task.is-locked');
+    locked ? showTip(locked) : hideTip();
+  });
+  guide.addEventListener('focusout', hideTip);
+
+  // The guide can move out from under a live tooltip — collapsing, or the page
+  // scrolling behind it — and a tooltip left behind points at nothing.
+  window.addEventListener('scroll', hideTip, true);
+  window.addEventListener('resize', hideTip);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') hideTip(); });
 
   function completeBusinessModel() {
     completeThrough(0);
@@ -517,10 +662,18 @@
 
   const syncStartOptions = () => {
     goDashboard.disabled = !startBoxes.some(b => b.checked);
-    // Each product picked adds its mark to the card, in the order they're listed
+    // Each product picked adds its mark to the card, in the order they're
+    // listed. A mark's slot is how many picked marks sit ahead of it, so a
+    // product ticked from the middle of the list slides the ones after it
+    // along instead of appearing on top of them. Marks not picked take the
+    // slot they would have had, and so fade up in place when their turn comes.
+    let slot = 0;
     startMarks.forEach(mark => {
       const box = startBoxes.find(b => b.dataset.product === mark.dataset.product);
-      mark.classList.toggle('is-on', !!box && box.checked);
+      const on  = !!box && box.checked;
+      mark.style.setProperty('--slot', slot);
+      mark.classList.toggle('is-on', on);
+      if (on) slot++;
     });
   };
   startBoxes.forEach(b => b.addEventListener('change', syncStartOptions));
