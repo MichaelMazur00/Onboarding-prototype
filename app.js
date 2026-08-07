@@ -17,25 +17,10 @@
   ) || 1;
   const ms = n => (reduced ? 0 : n * SPEED);
 
-  /* ── Ripple ────────────────────────────── */
-
-  function ripple(btn, e) {
-    if (reduced) return;
-    const r = btn.getBoundingClientRect();
-    const size = Math.max(r.width, r.height);
-    const el = document.createElement('span');
-    el.className = 'ripple';
-    el.style.width = el.style.height = `${size}px`;
-    el.style.left = `${e.clientX - r.left - size / 2}px`;
-    el.style.top  = `${e.clientY - r.top  - size / 2}px`;
-    btn.appendChild(el);
-    setTimeout(() => el.remove(), ms(700) + 50);
-  }
-
-  document.addEventListener('click', e => {
-    const btn = e.target.closest('.btn');
-    if (btn) ripple(btn, e);
-  });
+  // Motion collapses under reduced motion; feedback does not. A beat that
+  // exists to say "this is working" has to survive, or the commit teleports
+  // with nothing to explain it.
+  const beat = n => n * SPEED;
 
   /* ── Routing ───────────────────────────── */
 
@@ -137,6 +122,7 @@
   const dialog   = $('#dialog');
   const nameIn   = $('#bizName');
   const siteIn   = $('#bizSite');
+  const continueIn = $('#continueBtn');
   let current    = null;
   let stagedExit = false;   // set only by the Go-to-Dashboard handover
 
@@ -175,7 +161,7 @@
       btn.classList.remove('is-busy');
       if (current !== layer) return;
       done();
-    }, ms(850));
+    }, beat(850));
   }
 
   // Committing from a modal blanks the page while the modal leaves, so the
@@ -335,14 +321,26 @@
     const site = siteIn.value.trim();
     const colored = preview.classList.contains('is-color');
 
+    // Nothing to continue with until the business is named.
+    continueIn.disabled = !name;
+
+    // The gradient behind the card comes up on the first keystroke and fades
+    // back out if the field is emptied. It's a transition, not a keyframe, so
+    // typing and deleting retarget it rather than restarting it.
+    dialogRight.classList.toggle('is-named', !!name);
+
     previewName.textContent = name || 'Business name';
     previewName.classList.toggle('is-filled', !!name);
 
+    // The mark is the last thing to land. It waits for the website to be
+    // entered and committed, so the card fills in one field at a time rather
+    // than the name bringing the branding with it.
     // Initials come from the start of each word, not the first N characters —
     // "Furever" is one word, so it stays "F". The printed card will carry a
     // second letter only when there is a second word to take it from.
-    previewLogo.textContent = name ? initials(name, colored ? 2 : 1) : '';
-    previewLogo.classList.toggle('is-filled', !!name);
+    const branded = !!name && colored;
+    previewLogo.textContent = branded ? initials(name, 2) : '';
+    previewLogo.classList.toggle('is-filled', branded);
 
     previewChipText.textContent = site || 'www.example.com';
     previewChip.classList.toggle('is-filled', !!site);
@@ -354,7 +352,6 @@
   function colorPreview() {
     if (!siteIn.value.trim()) return;
     preview.classList.add('is-color');
-    dialogRight.classList.add('is-color');
     syncPreview();
   }
 
@@ -528,7 +525,7 @@
   };
   startBoxes.forEach(b => b.addEventListener('change', syncStartOptions));
 
-  $('#continueBtn').addEventListener('click', () => dialog.classList.add('is-step2'));
+  continueIn.addEventListener('click', () => dialog.classList.add('is-step2'));
   $('#dialogBack').addEventListener('click', () => dialog.classList.remove('is-step2'));
 
   // Landing on the dashboard is where the setup guide takes over. The handover

@@ -69,9 +69,11 @@
             <div class="navgroup">
               <span class="navheading">Products</span>
               <a class="navitem navitem--toggle" id="navConnect"><span class="navitem__icon"><img src="assets/icons/platform.svg" alt="" /></span><span class="navitem__label">Connect</span><span class="navitem__chev"><img class="chev-down" src="assets/icons/chevron-down.svg" alt="" /><img class="chev-up" src="assets/icons/nav-chevron-up.svg" alt="" /></span></a>
-              <div class="subnav" id="connectSubnav">
-                <a class="subnav__item" id="navOverview">Overview</a>
-                <a class="subnav__item" id="navConnected">Connected accounts</a>
+              <div class="reveal subnav" id="connectSubnav">
+                <div class="reveal__inner subnav__inner">
+                  <a class="subnav__item" id="navOverview">Overview</a>
+                  <a class="subnav__item" id="navConnected">Connected accounts</a>
+                </div>
               </div>
               <a class="navitem navitem--toggle"><span class="navitem__icon"><img src="assets/icons/wallet.svg" alt="" /></span><span class="navitem__label">Payments</span><span class="navitem__chev"><img src="assets/icons/chevron-down.svg" alt="" /></span></a>
               <a class="navitem navitem--toggle"><span class="navitem__icon"><img src="assets/icons/invoice.svg" alt="" /></span><span class="navitem__label">Billing</span><span class="navitem__chev"><img src="assets/icons/chevron-down.svg" alt="" /></span></a>
@@ -638,45 +640,49 @@
             <div class="guide__progress" id="guideProgress"></div>
           </div>
 
-          <div class="guide__summary">Next: <button class="guide__next" id="guideNext" data-route="#connect">Choose your business model</button></div>
+          <div class="reveal guide__reveal guide__reveal--summary">
+            <div class="reveal__inner guide__summary">Next: <button class="guide__next" id="guideNext" data-route="#connect">Choose your business model</button></div>
+          </div>
 
-          <div class="guide__groups">
-            <div class="guide__group guide__group--open" data-group>
-              <button class="guide__row">
-                <span class="guide__grouptitle">Test Connect</span>
-                <span class="guide__chevs">
-                  <img class="guide__chev chev-up" src="assets/icons/chevron-up.svg" alt="" />
-                  <img class="guide__chev chev-down" src="assets/icons/chevron-down-8.svg" alt="" />
-                </span>
-              </button>
-              <div class="guide__tasks">
-                <button class="task is-next" id="taskBusinessModel">
-                  <span class="task__dot"></span><span class="task__label">Choose your business model</span>
+          <div class="reveal guide__reveal guide__reveal--groups">
+            <div class="reveal__inner guide__groups">
+              <div class="guide__group guide__group--open" data-group>
+                <button class="guide__row">
+                  <span class="guide__grouptitle">Test Connect</span>
+                  <span class="guide__chevs">
+                    <img class="guide__chev chev-up" src="assets/icons/chevron-up.svg" alt="" />
+                    <img class="guide__chev chev-down" src="assets/icons/chevron-down-8.svg" alt="" />
+                  </span>
                 </button>
-                <button class="task is-locked" id="taskTestAccount"><span class="task__dot"></span><span class="task__label">Create a test account</span></button>
-                <button class="task is-locked" id="taskTestCharge"><span class="task__dot"></span><span class="task__label">Create a test charge</span></button>
-                <button class="task is-locked" id="taskIntegrationGuide"><span class="task__dot"></span><span class="task__label">View your integration guide</span></button>
+                <div class="guide__tasks">
+                  <button class="task is-next" id="taskBusinessModel">
+                    <span class="task__dot"></span><span class="task__label">Choose your business model</span>
+                  </button>
+                  <button class="task is-locked" id="taskTestAccount"><span class="task__dot"></span><span class="task__label">Create a test account</span></button>
+                  <button class="task is-locked" id="taskTestCharge"><span class="task__dot"></span><span class="task__label">Create a test charge</span></button>
+                  <button class="task is-locked" id="taskIntegrationGuide"><span class="task__dot"></span><span class="task__label">View your integration guide</span></button>
+                </div>
               </div>
-            </div>
 
-            <div class="guide__group" data-group>
-              <button class="guide__row">
-                <span class="guide__grouptitle">Verify your business</span>
-                <span class="guide__chevs">
-                  <img class="guide__chev chev-up" src="assets/icons/chevron-up.svg" alt="" />
-                  <img class="guide__chev chev-down" src="assets/icons/chevron-down-8.svg" alt="" />
-                </span>
-              </button>
-              <div class="guide__tasks">
-                <button class="task" id="taskVerifyIdentity"><span class="task__dot"></span><span class="task__label">Verify your identity</span></button>
-                <div class="task"><span class="task__dot"></span><span class="task__label">Verify your business</span></div>
+              <div class="guide__group" data-group>
+                <button class="guide__row">
+                  <span class="guide__grouptitle">Verify your business</span>
+                  <span class="guide__chevs">
+                    <img class="guide__chev chev-up" src="assets/icons/chevron-up.svg" alt="" />
+                    <img class="guide__chev chev-down" src="assets/icons/chevron-down-8.svg" alt="" />
+                  </span>
+                </button>
+                <div class="guide__tasks">
+                  <button class="task" id="taskVerifyIdentity"><span class="task__dot"></span><span class="task__label">Verify your identity</span></button>
+                  <div class="task"><span class="task__dot"></span><span class="task__label">Verify your business</span></div>
+                </div>
               </div>
-            </div>
 
-            <div class="guide__group">
-              <div class="guide__row">
-                <span class="guide__grouptitle">Go live</span>
-                <img class="guide__chev guide__chev--lock" src="assets/icons/lock.svg" alt="" />
+              <div class="guide__group">
+                <div class="guide__row">
+                  <span class="guide__grouptitle">Go live</span>
+                  <img class="guide__chev guide__chev--lock" src="assets/icons/lock.svg" alt="" />
+                </div>
               </div>
             </div>
           </div>
@@ -910,7 +916,7 @@
             </div>
 
             <div class="dialog__actions">
-              <button class="btn btn--primary btn--block" id="continueBtn">Continue</button>
+              <button class="btn btn--primary btn--block" id="continueBtn" disabled>Continue</button>
             </div>
           </div>
 
@@ -965,6 +971,7 @@
           <img class="dialog__wash" src="assets/preview-wash.png" alt="" />
           <div class="preview" id="preview">
             <img class="preview__paper" src="assets/preview-card.png" alt="" />
+            <i class="preview__grain"></i>
             <div class="preview__head">
               <div class="preview__logo" id="previewLogo"></div>
               <p class="preview__name" id="previewName">Business name</p>

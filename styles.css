@@ -72,6 +72,9 @@
   --ease-enter: cubic-bezier(.05, .85, .15, 1);
   --speed:     1;
   --t-fast:    calc(160ms * var(--speed));
+  /* Panels and disclosures: too big a move for the feedback beat, too small
+     for the page beat. */
+  --t-mid:     calc(240ms * var(--speed));
   --t-base:    calc(420ms * var(--speed));
   --t-slow:    calc(700ms * var(--speed));
 
@@ -179,20 +182,13 @@ body {
   color: var(--text);
   box-shadow: 0 1px 1px 0 rgba(33,37,44,0.16);
 }
-.btn--secondary:hover { filter: none; background: var(--offset); box-shadow: 0 3px 8px rgba(33,37,44,0.12); }
-.btn:hover { filter: brightness(1.06); transform: translateY(-1px); box-shadow: 0 3px 8px rgba(47,14,99,0.28); }
-.btn:active { transform: translateY(0) scale(0.985); }
-
-.ripple {
-  position: absolute;
-  border-radius: 50%;
-  background: #fff;
-  opacity: 0.3;
-  transform: scale(0);
-  pointer-events: none;
-  animation: ripple calc(620ms * var(--speed)) var(--ease) forwards;
+/* Hover lift is gated: a tap on touch fires a false hover, which would leave
+   the button parked in its raised state after the press. */
+@media (hover: hover) and (pointer: fine) {
+  .btn--secondary:hover { filter: none; background: var(--offset); box-shadow: 0 3px 8px rgba(33,37,44,0.12); }
+  .btn:hover { filter: brightness(1.06); transform: translateY(-1px); box-shadow: 0 3px 8px rgba(47,14,99,0.28); }
 }
-@keyframes ripple { to { transform: scale(2.8); opacity: 0; } }
+.btn:active { transform: translateY(0) scale(0.985); }
 
 /* ───────── Sandbox surface ───────── */
 
@@ -220,12 +216,26 @@ body {
   z-index: 1;
 }
 
-/* Colour wash — wave-wall @ 80px blur, 40% (Figma 295:54862) */
+/* Colour wash — wave-wall @ 80px blur, 40% (Figma 295:54862)
+   Anchored to the right edge and capped, so the colour gathers toward the
+   setup guide rather than washing flat across the metrics. 952px puts its
+   left edge 636px out from the guide's "Next: …" line — the guide is 288px
+   wide at a 24px inset with 12px of summary padding, so that line sits 300px
+   in from the right, and the wash carries its own 16px of overhang past the
+   edge. The cap is the wash's original full-bleed geometry (left: 248px
+   against right: -16px), so a narrow viewport never pushes it further left
+   than the content column ever did.
+   This is unconditional rather than keyed to onboarding: the wash reads
+   through the scrim while the modal is up, so it has to be the same shape
+   there as on the dashboard afterwards — and .wash img crops with
+   percentages of this box, so a width that changed between the two states
+   would re-scale the texture underneath the handover. */
 .wash {
   position: absolute;
-  left: 248px;
   right: -16px;
   bottom: -170px;
+  width: 952px;
+  max-width: calc(100% - 232px);
   height: 524px;
   border-radius: 9999px;
   overflow: hidden;
@@ -313,7 +323,22 @@ body.is-onboarded .account__initial { opacity: 1; }
   cursor: pointer;
   transition: transform var(--t-fast) var(--ease), opacity var(--t-fast) var(--ease);
 }
-.toolbar img:hover { transform: translateY(-1px); opacity: 0.7; }
+@media (hover: hover) and (pointer: fine) {
+  .toolbar img:hover { transform: translateY(-1px); opacity: 0.7; }
+}
+
+/* ───────── Disclosure ─────────
+   One primitive for everything that opens. The outer element transitions its
+   single grid row from 0fr to 1fr and the inner clips it. Because that is a
+   transition and not a keyframe, toggling mid-reveal retargets from wherever
+   the panel had got to rather than snapping shut and starting over. */
+.reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--t-fast) var(--ease-enter);
+}
+.reveal.is-open { grid-template-rows: 1fr; }
+.reveal__inner { min-height: 0; overflow: hidden; }
 
 /* ───────── Sidebar ───────── */
 
@@ -384,9 +409,26 @@ body.is-onboarded .account__initial { opacity: 1; }
 .navitem.is-expanded .chev-down { display: none; }
 .navitem.is-expanded .chev-up { display: block; }
 
-/* Sub-nav — indented 32px per the design */
-.subnav { display: none; flex-direction: column; gap: 4px; padding-bottom: 4px; }
-.subnav.is-open { display: flex; }
+/* Sub-nav — indented 32px per the design. It grows out of the Connect item
+   rather than appearing whole, so the pages read as belonging to it.
+   Closed, it still sits in the flow at zero height, so the -6px cancels the
+   .navgroup gap it would otherwise add above itself. */
+.subnav {
+  margin-top: -6px;
+  transition:
+    grid-template-rows var(--t-fast) var(--ease-enter),
+    margin-top         var(--t-fast) var(--ease-enter);
+}
+.subnav.is-open { margin-top: 0; }
+.subnav__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  /* The clip box is widened by exactly the 4px the hover pill bleeds into,
+     so opening the disclosure never shaves its rounded ends. */
+  margin: -2px -4px 0;
+  padding: 2px 4px 4px;
+}
 /* Same hover affordance as the top-level nav items, bled 4px past the text */
 .subnav__item {
   margin: -2px -4px;
@@ -429,8 +471,10 @@ body[data-view="home"] .toolbar__apps,
 body[data-view="home"] .toolbar__add { display: none; }
 
 /* Route change reads as navigation, not decoration. Opacity only — content
-   settles in place rather than drifting up into it. */
-.content { animation: route-in var(--t-base) var(--ease); }
+   settles in place rather than drifting up into it. Nav is the most-repeated
+   move in the flow, so this runs on the fast beat: a route change should feel
+   like arriving, not like waiting for a fade. */
+.content { animation: route-in var(--t-fast) var(--ease-enter); }
 @keyframes route-in {
   from { opacity: 0; }
   to   { opacity: 1; }
@@ -1104,7 +1148,9 @@ body[data-view="payment"] .surface::before { display: none; }
   opacity: 0.8;
   transition: opacity var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
-.cadhead__back:hover { opacity: 1; transform: translateX(-2px); }
+@media (hover: hover) and (pointer: fine) {
+  .cadhead__back:hover { opacity: 1; transform: translateX(-2px); }
+}
 .cadhead__back img { width: 12px; height: 11px; display: block; }
 
 .cadhead__avatar {
@@ -1815,11 +1861,30 @@ body[data-view="payment"] #cadPayment { display: block; }
 }
 
 /* Collapsed variant (Figma 105:25795 / 298:61874) — header + bar + next-up
-   line only, 80px tall. The summary and the step list are mutually exclusive. */
+   line only, 80px tall. The summary and the step list are mutually exclusive,
+   but both stay in the flow: one row closes as the other opens, so the panel
+   grows and shrinks off its pinned bottom edge instead of jumping between
+   two sizes. */
+.guide__reveal {
+  opacity: 0;
+  transition:
+    grid-template-rows var(--t-mid)  var(--ease),
+    opacity            var(--t-fast) var(--ease);
+}
+.guide.is-collapsed .guide__reveal--summary,
+.guide:not(.is-collapsed) .guide__reveal--groups {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  /* The arriving half waits out the leaving one, so the two never read
+     over each other through the middle of the swap. */
+  transition:
+    grid-template-rows var(--t-mid)  var(--ease),
+    opacity            var(--t-fast) var(--ease) var(--t-fast);
+}
+
 .guide__summary {
   padding: 4px 12px 8px;
   color: var(--text-subdued);
-  display: none;
 }
 /* The next-up label routes to the page that task lives on */
 .guide__next {
@@ -1835,9 +1900,6 @@ body[data-view="payment"] #cadPayment { display: block; }
   transition: opacity var(--t-fast) var(--ease);
 }
 .guide__next:hover { opacity: 0.7; }
-.guide.is-collapsed .guide__summary { display: block; }
-.guide.is-collapsed .guide__groups { display: none; }
-
 .guide__groups { padding: 4px; display: flex; flex-direction: column; }
 .guide__group { border-radius: 8px; padding: 4px; }
 .guide__group--open { background: var(--offset); padding: 4px; }
@@ -1871,7 +1933,7 @@ button.guide__row { cursor: pointer; }
 /* One group is open at a time; the rail spans first dot to last, whatever
    the task count */
 .guide__tasks { display: none; position: relative; flex-direction: column; }
-.guide__group--open .guide__tasks { display: flex; animation: group-open var(--t-base) var(--ease); }
+.guide__group--open .guide__tasks { display: flex; animation: group-open var(--t-base) var(--ease-enter); }
 @keyframes group-open {
   from { opacity: 0; transform: translateY(-4px); }
   to   { opacity: 1; transform: none; }
@@ -1971,7 +2033,9 @@ button.task:hover { background: rgba(0,39,77,0.045); }
   transition: opacity var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .taskbar__utils img.is-sm { width: 12px; height: 12px; }
-.taskbar__utils img:hover { opacity: 0.65; transform: translateY(-1px); }
+@media (hover: hover) and (pointer: fine) {
+  .taskbar__utils img:hover { opacity: 0.65; transform: translateY(-1px); }
+}
 .taskbar__divider { width: 1px; height: 16px; background: var(--taskbar-line); }
 
 /* ───────── Backdrop + dialog ───────── */
@@ -2065,7 +2129,7 @@ button.task:hover { background: rgba(0,39,77,0.045); }
     transform    var(--t-fast) var(--ease);
 }
 .model:hover { border-color: var(--neutral-100); }
-.model:active { transform: scale(0.995); }
+.model:active { transform: scale(0.97); }
 
 /* Selected (Figma 298:66484) — brand-tinted diagram pane, purple tiles,
    the flow box lifts on Shadow/Medium. The meta block is unchanged. */
@@ -2286,7 +2350,7 @@ button.task:hover { background: rgba(0,39,77,0.045); }
 .dialog__step { flex: 1; display: flex; flex-direction: column; gap: 24px; }
 #dialogStep2 { display: none; }
 .dialog.is-step2 #dialogStep1 { display: none; }
-.dialog.is-step2 #dialogStep2 { display: flex; animation: fade-in var(--t-base) var(--ease); }
+.dialog.is-step2 #dialogStep2 { display: flex; animation: fade-in var(--t-base) var(--ease-enter); }
 
 .dialog__body { flex: 1; display: flex; flex-direction: column; gap: 24px; }
 
@@ -2446,8 +2510,12 @@ button.task:hover { background: rgba(0,39,77,0.045); }
   overflow: hidden;
 }
 
-/* Colour arrives once the website has been entered and committed
-   (Figma 295:53835). Everything below fades in behind `.is-color`. */
+/* The wash is the first thing to answer the user: it starts arriving on the
+   opening keystroke of the business name, so the pane warms up underneath the
+   card while the name is still being typed onto it. It runs on the slow beat
+   deliberately — an ambient background has no business drawing the eye off
+   the field, and at 700ms it is still moving when the name is finished.
+   The printed card (Figma 295:53835) lands later, behind `.is-color`. */
 .dialog__wash {
   position: absolute;
   left: -133px;
@@ -2460,7 +2528,7 @@ button.task:hover { background: rgba(0,39,77,0.045); }
   opacity: 0;
   transition: opacity var(--t-slow) var(--ease);
 }
-.dialog__right.is-color .dialog__wash { opacity: 1; }
+.dialog__right.is-named .dialog__wash { opacity: 1; }
 
 .preview {
   width: 300px;
@@ -2471,6 +2539,9 @@ button.task:hover { background: rgba(0,39,77,0.045); }
   position: relative;
   overflow: hidden;
   background: var(--offset);
+  /* Deliberately no `isolation` here. It would form a backdrop root, and the
+     printed card's frosting depends on .preview__grain's backdrop-filter
+     reaching past the card to the wash behind it. */
   transition: border-color var(--t-base) var(--ease), background var(--t-base) var(--ease);
 }
 .preview.is-filled { background: var(--surface); border-color: var(--neutral-200); }
@@ -2529,7 +2600,9 @@ button.task:hover { background: rgba(0,39,77,0.045); }
     transform    var(--t-base) var(--ease);
 }
 .preview__chip.is-filled { color: var(--text-subdued); border-color: var(--neutral-200); }
-.preview__chip.is-bump { animation: bump var(--t-base) var(--ease); }
+/* Fires on every keystroke, so it lives on the feedback beat — long enough to
+   register, short enough to finish before the next character lands. */
+.preview__chip.is-bump { animation: bump var(--t-fast) var(--ease); }
 @keyframes bump {
   0%   { transform: scale(1); }
   40%  { transform: scale(1.05); }
@@ -2553,7 +2626,7 @@ button.task:hover { background: rgba(0,39,77,0.045); }
   display: none;
   width: 16px;
   height: 16px;
-  animation: mark-in var(--t-base) var(--ease) both;
+  animation: mark-in var(--t-base) var(--ease-enter) both;
 }
 .preview__mark.is-on { display: block; }
 @keyframes mark-in {
@@ -2569,9 +2642,13 @@ button.task:hover { background: rgba(0,39,77,0.045); }
 
 .preview__paper {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  /* Out over the card's 1px border. In Figma the image is a fill on the
+     300x400 frame, so it reaches the edge; positioned against the padding
+     box it would stop 1px short on every side and be resampled into
+     298x398. -1px restores both the edge and the 1:1 pixel mapping —
+     hence no width/height here, which would resolve to the padding box
+     again and re-introduce the crop. */
+  inset: -1px;
   border-radius: 16px;
   object-fit: cover;
   pointer-events: none;
@@ -2579,7 +2656,38 @@ button.task:hover { background: rgba(0,39,77,0.045); }
   transition: opacity var(--t-slow) var(--ease);
 }
 .preview.is-color .preview__paper { opacity: 1; }
+
+/* Grain over the paper (Figma 295:54789) — a 1024px noise tile at 28%,
+   blended rather than laid on, so it roughens the card's surface without
+   lifting its value. It rides the same beat as the paper beneath it, so the
+   printed card arrives already textured instead of gaining its grain after.
+   `isolation` on .preview is what keeps the blend inside the card: without a
+   stacking context here, `overlay` would reach past the card and blend with
+   the wash behind it. */
+.preview__grain {
+  position: absolute;
+  inset: -1px;                  /* tracks .preview__paper out over the border */
+  border-radius: 16px;
+  background-image: url("assets/preview-grain.png");
+  background-size: 1024px 1024px;
+  background-position: top left;
+  mix-blend-mode: overlay;
+  /* The paper is not a clean gradient — it carries a diagonal edge, and this
+     is what softens it out. The blend composites against the blurred result,
+     so the two belong together. */
+  -webkit-backdrop-filter: blur(40px);
+          backdrop-filter: blur(40px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--t-slow) var(--ease);
+}
+.preview.is-color .preview__grain { opacity: 0.28; }
 .preview.is-color {
+  /* preview-card.png is RGBA at roughly 64–80% alpha — it is a frosted panel,
+     not a solid one, so the card has to stop painting a fill of its own or the
+     wash behind it never comes through. rgba() rather than `transparent` so
+     the fade out of the white live-modelling state cannot dip through grey. */
+  background: rgba(255,255,255,0);
   border-color: transparent;
   box-shadow:
     0 1px 0 0 rgba(10,37,64,0.12),
@@ -2605,6 +2713,10 @@ button.task:hover { background: rgba(0,39,77,0.045); }
 }
 
 /* The lit parallelogram replaces the outlined one */
+/* Left unblended on purpose. The SVG carries `mix-blend-mode: overlay` on its
+   gradient, which an <img> renders in isolation — and that is the reading we
+   want: blending it against the card flattens the band almost out of sight,
+   where the design wants it plainly visible through the middle of the card. */
 .preview__vector--lit { opacity: 0; transition: opacity var(--t-slow) var(--ease); }
 .preview.is-color .preview__vector:not(.preview__vector--lit) { opacity: 0; }
 .preview.is-color .preview__vector--lit { opacity: 1; }
@@ -2612,10 +2724,32 @@ button.task:hover { background: rgba(0,39,77,0.045); }
 
 /* ───────── Reduced motion ───────── */
 
+/* Fewer and gentler, not none. The opacity and colour work is what explains
+   each state change — a page that swaps instantly is harder to follow, not
+   kinder. So the fades stay at their normal timings and only motion goes:
+   anything that travels, scales or repeats is dropped to its end state. */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-  }
+  /* Keyframes that carry movement */
+  .task.is-done .task__label,
+  .preview__chip.is-bump,
+  .guide__group--open .guide__tasks,
+  .preview__mark,
+  .task.is-done .task__dot::before { animation: none !important; }
+
+  /* The tick's resting state is scale(0) — its animation supplied the end
+     state, so without it the checkmark has to be placed directly. */
+  .task.is-done .task__dot::before { transform: rotate(45deg) scale(1) !important; }
+
+  /* Disclosures resize instantly; only their crossfade survives */
+  .reveal { transition-property: opacity !important; }
+
+  /* Transitions that travel. The opacity halves of these still run. */
+  .modal, .modal.is-leaving,
+  .dialog, .dialog.is-leaving,
+  .preview__logo.is-filled,
+  .btn:hover, .btn:active,
+  .model:active,
+  .toolbar img:hover,
+  .cadhead__back:hover,
+  .taskbar__utils img:hover { transform: none !important; }
 }
