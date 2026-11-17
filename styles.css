@@ -91,6 +91,12 @@
    the file in assets/icons/ named after the variable; if one changes, its
    line here has to be regenerated from it. */
 :root {
+  --mask-wb-tray-inspect: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M4.67 1.25A2.33 2.33 0 0 0 2.44 2.9L.179 10.302A4.097 4.097 0 0 0 0 11.5a3.5 3.5 0 1 0 7 0V9.394C7.47 9.093 7.786 9 8 9c.214 0 .53.093 1 .394V11.5a3.5 3.5 0 1 0 7 0 4.1 4.1 0 0 0-.179-1.197L13.56 2.899A2.33 2.33 0 0 0 9 3.58v.581A3.127 3.127 0 0 0 8 4c-.348 0-.683.055-1 .161v-.58A2.33 2.33 0 0 0 4.67 1.25Zm.83 7.377V3.58a.83.83 0 0 0-1.625-.242l-1.478 4.84A3.497 3.497 0 0 1 3.5 8c.744 0 1.433.232 2 .627Zm-4 2.873a2 2 0 1 0 4 0 2 2 0 0 0-4 0Zm11 2a2 2 0 1 1 0-4 2 2 0 0 1 0 4Zm0-5.5c.386 0 .757.062 1.103.177l-1.479-4.84a.83.83 0 0 0-1.624.243v5.047a3.484 3.484 0 0 1 2-.627ZM7 5.838v1.868c.33-.131.664-.206 1-.206.336 0 .67.075 1 .206V5.838A1.615 1.615 0 0 0 8 5.5c-.358 0-.692.106-1 .338Z'%3E%3C/path%3E%3C/svg%3E");
+  --mask-wb-tray-alerts: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='m10.461 1.705 4.918 8.941a3 3 0 0 1 .371 1.446v.658a3 3 0 0 1-3 3h-9.5a3 3 0 0 1-3-3v-.658a3 3 0 0 1 .371-1.446l4.918-8.94a2.809 2.809 0 0 1 4.922 0ZM12.75 14.25h-9.5a1.5 1.5 0 0 1-1.5-1.5v-.658a1.5 1.5 0 0 1 .186-.723l4.917-8.941a1.309 1.309 0 0 1 2.294 0l4.917 8.941a1.5 1.5 0 0 1 .186.723v.658a1.5 1.5 0 0 1-1.5 1.5Z'%3E%3C/path%3E%3Cpath d='M9.25 11.5a1.25 1.25 0 1 1-2.5 0 1.25 1.25 0 0 1 2.5 0ZM7 5.499c-.029-.543.456-.999 1-.999s1.029.456 1 .999L8.79 8.5a.79.79 0 0 1-1.58 0L7 5.5Z'%3E%3C/path%3E%3C/svg%3E");
+  --mask-wb-tray-events: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M8.431 12.346a3.81 3.81 0 0 0 3.757 3.154c2.103 0 3.812-1.7 3.812-3.803a3.808 3.808 0 0 0-3.812-3.803c-.403 0-.796.06-1.168.178l-.51-.888a3.775 3.775 0 0 0 1.327-2.88A3.808 3.808 0 0 0 8.025.5a3.808 3.808 0 0 0-3.812 3.803c0 1.146.507 2.176 1.314 2.874l-.521.897a3.807 3.807 0 0 0-1.194-.19A3.808 3.808 0 0 0 0 11.687a3.808 3.808 0 0 0 3.812 3.803 3.81 3.81 0 0 0 3.755-3.15l.864.006ZM8.025 2a2.308 2.308 0 0 0-2.312 2.303c0 .85.459 1.594 1.155 1.994a.75.75 0 0 1 .375.68.746.746 0 0 1-.1.407l-2.683 4.61a.75.75 0 0 1-1.296-.754l1.059-1.82A2.308 2.308 0 0 0 1.5 11.687a2.308 2.308 0 0 0 2.312 2.303 2.31 2.31 0 0 0 2.312-2.313h.006a.75.75 0 0 1 .749-.84l5.383.03a.75.75 0 0 1-.008 1.5l-2.282-.013A2.312 2.312 0 0 0 12.188 14a2.308 2.308 0 0 0 2.312-2.303 2.308 2.308 0 0 0-2.312-2.303 2.28 2.28 0 0 0-1.147.299.75.75 0 0 1-1.11-.506l-2.556-4.45a.75.75 0 1 1 1.3-.747l1.066 1.856c.37-.406.596-.947.596-1.543A2.308 2.308 0 0 0 8.025 2Z'%3E%3C/path%3E%3C/svg%3E");
+  --mask-wb-tray-toggle: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='8' r='7.25'%3E%3C/circle%3E%3Cpath d='M5 9.5 8 6.5 11 9.5'%3E%3C/path%3E%3C/svg%3E");
+  --mask-wb-transfer: url("data:image/svg+xml,%3Csvg preserveAspectRatio='none' overflow='visible' style='display: block%3B' width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg id='NextIcon--transfer'%3E%3Cg id='icon'%3E%3Cpath d='M8.20041 4.73966C7.91856 5.04319 7.93613 5.51774 8.23967 5.79959C8.5432 6.08144 9.01775 6.06387 9.2996 5.76033L11.25 3.6599V14.25C11.25 14.6642 11.5858 15 12 15C12.4142 15 12.75 14.6642 12.75 14.25V3.6599L14.7004 5.76033C14.9823 6.06387 15.4568 6.08144 15.7603 5.79959C15.9187 5.65259 15.9992 5.45317 16 5.25293C16.0008 5.06925 15.9344 4.88488 15.7996 4.73966L12.5496 1.23966C12.4077 1.08683 12.2086 0.999996 12 0.999996C11.7915 0.999996 11.5923 1.08683 11.4504 1.23966L8.20041 4.73966Z' fill='%23768193'/%3E%3Cpath d='M4.75 12.3401L6.70041 10.2397C6.98226 9.93613 7.45681 9.91855 7.76034 10.2004C8.06387 10.4823 8.08145 10.9568 7.7996 11.2603L4.5496 14.7603C4.40769 14.9132 4.20856 15 4 15C3.79145 15 3.59232 14.9132 3.45041 14.7603L0.200408 11.2603C0.064323 11.1138 -0.00195964 10.9274 4.40919e-05 10.742C0.00219038 10.5435 0.0826851 10.3462 0.239665 10.2004C0.543198 9.91855 1.01775 9.93613 1.2996 10.2397L3.25 12.3401V1.75C3.25 1.33579 3.58579 1 4 1C4.41421 1 4.75 1.33579 4.75 1.75V12.3401Z' fill='%23768193'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  --mask-wb-sparkle: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11.472 2.624a.25.25 0 0 0 .152-.152l.64-1.807A.246.246 0 0 1 12.5.499c.098 0 .196.055.236.166l.64 1.807a.25.25 0 0 0 .152.152l1.807.64c.111.04.166.138.166.236a.246.246 0 0 1-.166.236l-1.807.64a.25.25 0 0 0-.152.152l-.64 1.807a.246.246 0 0 1-.236.166.246.246 0 0 1-.236-.166l-.64-1.807a.25.25 0 0 0-.152-.152l-1.807-.64A.246.246 0 0 1 9.5 3.5c0-.098.055-.196.166-.236l1.807-.64Z'%3E%3C/path%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='m7 5.491-.56 1.58a2.25 2.25 0 0 1-1.37 1.37L3.492 9l1.58.56a2.25 2.25 0 0 1 1.37 1.37L7 12.508l.56-1.58a2.25 2.25 0 0 1 1.37-1.37L10.508 9l-1.58-.56a2.25 2.25 0 0 1-1.37-1.37L7 5.492Zm.707-2.496a.737.737 0 0 0-.707-.5.737.737 0 0 0-.707.5L5.026 6.57a.75.75 0 0 1-.456.456L.995 8.293a.737.737 0 0 0-.5.707c0 .294.167.589.5.707l3.575 1.267a.75.75 0 0 1 .456.456l1.267 3.575c.118.333.413.5.707.5a.737.737 0 0 0 .707-.5l1.267-3.575a.75.75 0 0 1 .456-.456l3.575-1.267a.737.737 0 0 0 .5-.707.737.737 0 0 0-.5-.707L9.43 7.026a.75.75 0 0 1-.456-.456L7.707 2.995Z'%3E%3C/path%3E%3C/svg%3E");
   --mask-wb-code: url("data:image/svg+xml,%3Csvg aria-hidden='true' width='16' height='16' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M13 2.5H3A1.5 1.5 0 0 0 1.5 4v8A1.5 1.5 0 0 0 3 13.5h10a1.5 1.5 0 0 0 1.5-1.5V4A1.5 1.5 0 0 0 13 2.5ZM3 1a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V4a3 3 0 0 0-3-3H3Z'%3E%3C/path%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M3.43 4.512a.75.75 0 0 1 1.058-.081l3.5 3a.75.75 0 0 1 0 1.138l-3.5 3a.75.75 0 1 1-.976-1.138L6.348 8 3.512 5.57a.75.75 0 0 1-.081-1.058ZM8 10.75a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 0 1.5h-3.5a.75.75 0 0 1-.75-.75Z'%3E%3C/path%3E%3C/svg%3E");
   --mask-chevron-up: url("data:image/svg+xml,%3Csvg preserveAspectRatio='none' overflow='visible' style='display: block%3B' width='8' height='8' viewBox='0 0 8 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg id='NextIcon__xxsmall--chevronUp'%3E%3Cpath id='icon' fill-rule='evenodd' clip-rule='evenodd' d='M0.606079 5.66649C0.450378 5.51728 0.38 5.31706 0.375046 5.11719C0.376927 4.93316 0.446133 4.74943 0.583516 4.60607L3.45852 1.60607C3.5999 1.45854 3.79536 1.37509 3.99969 1.375C4.20403 1.37491 4.39956 1.45821 4.54107 1.60562L7.41607 4.60062C7.55497 4.74532 7.63 4.93128 7.625 5.11719C7.62572 5.31519 7.5485 5.51312 7.39439 5.66106C7.09557 5.9479 6.62079 5.9382 6.33395 5.63938L4.00046 3.20849L1.6665 5.64393C1.3799 5.94299 0.905136 5.95309 0.606079 5.66649Z' fill='%236C7688'/%3E%3C/g%3E%3C/svg%3E");
   --mask-chevron-down-8: url("data:image/svg+xml,%3Csvg preserveAspectRatio='none' overflow='visible' style='display: block%3B' width='8' height='8' viewBox='0 0 8 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg id='NextIcon__xxsmall--chevronDown'%3E%3Cpath id='icon' fill-rule='evenodd' clip-rule='evenodd' d='M0.606079 2.33351C0.307021 2.62011 0.29692 3.09487 0.583516 3.39393L3.45852 6.39393C3.5999 6.54146 3.79536 6.62491 3.99969 6.625C4.20403 6.62509 4.39956 6.54179 4.54107 6.39438L7.41607 3.39938C7.70291 3.10056 7.69321 2.62579 7.39439 2.33894C7.09557 2.0521 6.62079 2.0618 6.33395 2.36062L4.00046 4.79151L1.6665 2.35607C1.3799 2.05701 0.905136 2.04691 0.606079 2.33351Z' fill='%236C7688'/%3E%3C/g%3E%3C/svg%3E");
@@ -2161,9 +2167,6 @@ button.task.is-locked:hover { background: none; }
   transition: opacity var(--t-fast) var(--ease);
 }
 .taskbar__utils { display: flex; align-items: center; gap: 20px; }
-.taskbar__acct { display: flex; align-items: center; gap: 8px; margin-right: 12px; }
-.taskbar__utils img { width: 16px; height: 16px; }
-.taskbar__acct img { width: 14px; height: 14px; }
 .taskbar__toggle { display: flex; margin-left: 12px; }
 @media (hover: hover) and (pointer: fine) {
   .taskbar__brand:hover, .taskbar__toggle:hover { opacity: 0.7; }
@@ -2180,32 +2183,18 @@ button.task.is-locked:hover { background: none; }
 }
 .tb__glyph--dev { --glyph: var(--mask-wb-code); }
 .tb__glyph--up  { --glyph: var(--mask-chevron-up); width: 10px; height: 10px; }
-/* ⌄ in a ring. It points down while the sheet is up (put it away) and turns
-   to point up once it is down (bring it back). */
-.tb__glyph--chev {
-  -webkit-mask: none;
-          mask: none;
-  background: none;
-  width: 18px;
-  height: 18px;
-  border: 1.5px solid currentColor;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transform: rotate(180deg);
+.tb__glyph--sparkle  { --glyph: var(--mask-wb-sparkle); width: 14px; height: 14px; }
+.tb__glyph--inspect  { --glyph: var(--mask-wb-tray-inspect); }
+.tb__glyph--alerts   { --glyph: var(--mask-wb-tray-alerts); }
+.tb__glyph--activity { --glyph: var(--mask-wb-transfer); }
+.tb__glyph--events   { --glyph: var(--mask-wb-tray-events); }
+/* The open/close glyph points up while the sheet is down (bring it up) and
+   turns over once it is up (put it away). */
+.tb__glyph--toggle {
+  --glyph: var(--mask-wb-tray-toggle);
   transition: transform var(--t-mid) var(--ease);
 }
-.tb__glyph--chev::after {
-  content: '';
-  width: 8px;
-  height: 8px;
-  margin-top: 1px;
-  background: currentColor;
-  -webkit-mask: var(--mask-chevron-down-8) center / contain no-repeat;
-          mask: var(--mask-chevron-down-8) center / contain no-repeat;
-}
-body.wb-open .tb__glyph--chev { transform: none; }
+body.wb-open .tb__glyph--toggle { transform: rotate(180deg); }
 
 /* ───────── Workbench sheet (Figma 21:51315) ───────── */
 
