@@ -140,7 +140,8 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
-  background: var(--surface);
+  /* The banner's navy, showing behind the page's rounded top corners */
+  background: var(--banner-navy);
   overflow: hidden;
 }
 
@@ -233,6 +234,7 @@ body {
   min-height: 0;
   position: relative;
   background: var(--surface);
+  border-radius: 16px 16px 0 0;
   overflow: hidden;
   display: flex;
   padding-top: 62px;
@@ -2147,7 +2149,7 @@ button.task.is-locked:hover { background: none; }
 .taskbar {
   position: relative;
   z-index: 7;
-  height: 44px;
+  height: 48px;
   flex: none;
   display: flex;
   align-items: center;
@@ -2181,7 +2183,7 @@ button.task.is-locked:hover { background: none; }
   -webkit-mask: var(--glyph) center / contain no-repeat;
           mask: var(--glyph) center / contain no-repeat;
 }
-.tb__glyph--dev { --glyph: var(--mask-wb-code); }
+.tb__glyph--dev { --glyph: var(--mask-wb-code); color: var(--taskbar-badge); }   /* #8C99AD */
 .tb__glyph--up  { --glyph: var(--mask-chevron-up); width: 10px; height: 10px; }
 .tb__glyph--sparkle  { --glyph: var(--mask-wb-sparkle); width: 14px; height: 14px; }
 .tb__glyph--inspect  { --glyph: var(--mask-wb-tray-inspect); }
@@ -2199,9 +2201,8 @@ body.wb-open .tb__glyph--toggle { transform: rotate(180deg); }
 /* ───────── Workbench sheet (Figma 21:51315) ───────── */
 
 /* A sheet, not a modal: no scrim, the page above it stays as it was. It rises
-   from behind the Developers bar and stops just short of the top nav, cutting
-   across it the way the design does, so you can still see which page it
-   opened over. */
+   from behind the Developers bar to 675px with it, so on a tall screen the
+   page it opened over stays in view above it. */
 .wb {
   --wb-bg:       #14171D;   /* Background/Surface, dark */
   --wb-offset:   #1B1E25;   /* Background/Offset, dark */
@@ -2217,8 +2218,11 @@ body.wb-open .tb__glyph--toggle { transform: rotate(180deg); }
   position: absolute;
   left: 0;
   right: 0;
-  top: 114px;               /* just under the top nav row, as in the design */
-  bottom: 44px;             /* sits on the Developers bar */
+  bottom: 48px;             /* sits on the Developers bar */
+  height: 627px;            /* with the 48px Developers bar, 675px in all */
+  /* On a screen too short for that, it stops under the sandbox banner (56px)
+     rather than covering it */
+  max-height: calc(100% - 48px - 56px);
   z-index: 6;               /* over the guide and tooltip, under the Developers bar */
   display: flex;
   flex-direction: column;
@@ -2856,7 +2860,7 @@ body.wb-open .tb__glyph--toggle { transform: rotate(180deg); }
   gap: 6px;
   padding: 16px;
   border-radius: 8px;
-  background: #1C1F27;
+  background: var(--wb-offset);   /* #1B1E25 */
   text-align: left;
   transition: background-color var(--t-fast) var(--ease);
 }
@@ -3015,7 +3019,7 @@ body.wb-open .tb__glyph--toggle { transform: rotate(180deg); }
 
 .wb__promptrow {
   flex: none;
-  height: 52px;
+  height: 48px;
   display: flex;
   align-items: center;
   gap: 16px;
