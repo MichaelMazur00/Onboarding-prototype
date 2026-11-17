@@ -1957,7 +1957,13 @@ body[data-view="payment"] #cadPayment { display: block; }
 }
 .guide__next:hover { opacity: 0.7; }
 .guide__groups { padding: 4px; display: flex; flex-direction: column; }
-.guide__group { border-radius: 8px; padding: 4px; }
+.guide__group {
+  border-radius: 8px;
+  padding: 4px;
+  /* The tint arrives and leaves with the rows it belongs to, rather than
+     switching a beat before them */
+  transition: background var(--t-mid) var(--ease);
+}
 .guide__group--open { background: var(--offset); padding: 4px; }
 .guide__row {
   width: 100%;
@@ -1975,25 +1981,64 @@ body[data-view="payment"] #cadPayment { display: block; }
   letter-spacing: -0.15px;
   color: var(--text);
   text-align: left;
+  transition: background var(--t-fast) var(--ease);
 }
 /* Only the groups that open respond to a click */
 button.guide__row { cursor: pointer; }
-.guide__grouptitle { flex: 1; font-weight: 600; }
-.guide__chevs { display: flex; align-items: center; }
-.guide__chev { width: 8px; height: 8px; }
-.guide__chev--lock { width: 12px; height: 12px; }
-.guide__group .chev-up { display: none; }
-.guide__group--open .chev-up { display: block; }
-.guide__group--open .chev-down { display: none; }
-
-/* One group is open at a time; the rail spans first dot to last, whatever
-   the task count */
-.guide__tasks { display: none; position: relative; flex-direction: column; }
-.guide__group--open .guide__tasks { display: flex; animation: group-open var(--t-base) var(--ease-enter); }
-@keyframes group-open {
-  from { opacity: 0; transform: translateY(-4px); }
-  to   { opacity: 1; transform: none; }
+/* Every closed row takes the same hover a task row does — including Go live,
+   which never opens. An open group already carries the --offset fill, and a
+   second tint laid over it would only muddy the one that means "open". */
+.guide__group:not(.guide__group--open) > .guide__row:hover {
+  background: rgba(0,39,77,0.045);
 }
+/* Go live is a hover target so it can explain itself, but it offers none of the
+   other affordances of a row that goes somewhere. */
+button.guide__row--locked { cursor: default; }
+.guide__grouptitle { flex: 1; font-weight: 600; }
+/* Both chevrons share one cell and cross-fade — swapping them on `display`
+   made the only instant thing on the row */
+.guide__chevs { display: grid; place-items: center; }
+.guide__chev { width: 8px; height: 8px; }
+.guide__chevs .guide__chev {
+  grid-area: 1 / 1;
+  transition: opacity var(--t-fast) var(--ease);
+}
+.guide__chev--lock { width: 12px; height: 12px; }
+.guide__group .chev-up { opacity: 0; }
+.guide__group--open .chev-up { opacity: 1; }
+.guide__group--open .chev-down { opacity: 0; }
+
+/* One group is open at a time. Closing used to be a `display: none` — the row
+   went from open to gone in one frame, which is the one move in the panel that
+   had no transition at all. It now uses the same disclosure the whole guide
+   grows and shrinks on: the rows collapse 1fr → 0fr over --t-mid while the
+   content fades over --t-fast, so the group hands its height back instead of
+   dropping it. Being a transition, switching groups mid-collapse retargets
+   from wherever each one had got to.
+   `visibility` is transitioned so the closing list stays on screen for the
+   whole collapse and is only then taken out of the tab order. */
+.guide__reveal--tasks {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    grid-template-rows var(--t-mid)  var(--ease),
+    opacity            var(--t-fast) var(--ease),
+    visibility         var(--t-mid);
+}
+.guide__group--open > .guide__reveal--tasks {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  /* Opening waits out the closing group's fade, so the two lists never read
+     over each other through the middle of the swap */
+  transition:
+    grid-template-rows var(--t-mid)  var(--ease),
+    opacity            var(--t-fast) var(--ease) 80ms,
+    visibility         var(--t-mid);
+}
+
+/* The rail spans first dot to last, whatever the task count */
+.guide__tasks { display: flex; position: relative; flex-direction: column; }
 .guide__tasks::before {
   content: '';
   position: absolute;
@@ -2062,42 +2107,930 @@ button.task.is-locked:hover { background: none; }
 }
 .task.is-unlocked { color: var(--text); }
 
-/* ───────── Taskbar ───────── */
+/* ───────── Developers bar ───────── */
 
+/* Always docked at the foot. Workbench slides out from behind it, so it sits
+   above the sheet in the stack — still under the modal scrim's 8. */
 .taskbar {
-  height: 40px;
+  position: relative;
+  z-index: 7;
+  height: 44px;
   flex: none;
-  background: var(--taskbar);
   display: flex;
   align-items: center;
-  padding: 0 4px 0 16px;
+  padding: 0 16px 0 20px;
+  background: var(--taskbar);
+  border-top: 1px solid var(--taskbar-line);
   color: var(--taskbar-text);
-  z-index: 4;
+  cursor: pointer;
 }
-.taskbar__brand { flex: 1; display: flex; align-items: baseline; gap: 8px; }
-.taskbar__brand > span:first-child { font-weight: 600; }
-.taskbar__badge {
+.taskbar button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+.taskbar__brand {
+  margin-right: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  transition: opacity var(--t-fast) var(--ease);
+}
+.taskbar__utils { display: flex; align-items: center; gap: 20px; }
+.taskbar__acct { display: flex; align-items: center; gap: 8px; margin-right: 12px; }
+.taskbar__utils img { width: 16px; height: 16px; }
+.taskbar__acct img { width: 14px; height: 14px; }
+.taskbar__toggle { display: flex; margin-left: 12px; }
+@media (hover: hover) and (pointer: fine) {
+  .taskbar__brand:hover, .taskbar__toggle:hover { opacity: 0.7; }
+}
+
+/* Glyphs recoloured through a mask, in the bar's text colour */
+.tb__glyph {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  background: currentColor;
+  -webkit-mask: var(--glyph) center / contain no-repeat;
+          mask: var(--glyph) center / contain no-repeat;
+}
+.tb__glyph--dev { --glyph: url("assets/icons/wb-code.svg"); }
+.tb__glyph--up  { --glyph: url("assets/icons/chevron-up.svg"); width: 10px; height: 10px; }
+/* ⌄ in a ring. It points down while the sheet is up (put it away) and turns
+   to point up once it is down (bring it back). */
+.tb__glyph--chev {
+  -webkit-mask: none;
+          mask: none;
+  background: none;
+  width: 18px;
   height: 18px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(180deg);
+  transition: transform var(--t-mid) var(--ease);
+}
+.tb__glyph--chev::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  margin-top: 1px;
+  background: currentColor;
+  -webkit-mask: url("assets/icons/chevron-down-8.svg") center / contain no-repeat;
+          mask: url("assets/icons/chevron-down-8.svg") center / contain no-repeat;
+}
+body.wb-open .tb__glyph--chev { transform: none; }
+
+/* ───────── Workbench sheet (Figma 21:51315) ───────── */
+
+/* A sheet, not a modal: no scrim, the page above it stays as it was. It rises
+   from behind the Developers bar and stops just short of the top nav, cutting
+   across it the way the design does, so you can still see which page it
+   opened over. */
+.wb {
+  --wb-bg:       #14171D;   /* Background/Surface, dark */
+  --wb-offset:   #1B1E25;   /* Background/Offset, dark */
+  --wb-line:     #2B3039;   /* Border/Default, dark */
+  --wb-text:     #C9CED8;   /* Text/Default, dark */
+  --wb-muted:    #6A7383;
+  --wb-subdued:  #8C99AD;
+  --wb-action:   #9289FE;   /* Text/Action Primary, dark */
+  --wb-open:  calc(560ms * var(--speed));
+  --wb-shut:  calc(340ms * var(--speed));
+  --wb-curve: cubic-bezier(.32, .72, 0, 1);   /* sheet: fast off the line, long settle */
+
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 114px;               /* just under the top nav row, as in the design */
+  bottom: 44px;             /* sits on the Developers bar */
+  z-index: 6;               /* over the guide and tooltip, under the Developers bar */
+  display: flex;
+  flex-direction: column;
+  background: var(--wb-bg);
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 -12px 40px rgba(0,0,0,0.18);
+  overflow: hidden;
+  color: var(--wb-text);
+
+  transform: translateY(100%);
+  visibility: hidden;
+  transition:
+    transform var(--wb-shut) var(--wb-curve),
+    visibility 0s linear var(--wb-shut);
+}
+.wb.is-open {
+  transform: none;
+  visibility: visible;
+  transition:
+    transform var(--wb-open) var(--wb-curve),
+    visibility 0s;
+}
+
+/* Zero-specificity reset, so each control below styles itself plainly */
+:where(.wb) button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+
+/* Drag handle */
+.wb__handle {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  width: 54px;
+  height: 4px;
+  margin-left: -27px;
+  border-radius: 100px;
+  background: #3E444F;
+}
+
+.wb__nav {
+  position: relative;
+  flex: none;
+  height: 53px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--wb-line);
+}
+.wb__tabs { display: flex; gap: 24px; height: 52px; }
+.wb__tab {
+  white-space: nowrap;
+  padding: 16px 0 14px;
+  border-bottom: 2px solid transparent;
+  font-weight: 600;
+  color: var(--wb-muted);
+  transition: color var(--t-fast) var(--ease);
+}
+.wb__tab.is-current { color: var(--wb-action); border-bottom-color: var(--wb-action); }
+@media (hover: hover) and (pointer: fine) {
+  .wb__tab:not(.is-current):hover { color: var(--wb-text); }
+}
+
+.wb__utils { height: 52px; display: flex; align-items: center; gap: 18px; color: var(--wb-text); }
+.wb__sep { width: 1px; height: 16px; background: var(--wb-line); }
+/* The top-right icons are plain 16px glyphs, painted in the text colour */
+.wb__topglyph {
+  width: 16px;
+  height: 16px;
+  background: currentColor;
+  -webkit-mask: var(--glyph) center / 16px 16px no-repeat;
+          mask: var(--glyph) center / 16px 16px no-repeat;
+}
+.wb__topglyph--link   { --glyph: url("assets/icons/wb-top-link.svg"); }
+.wb__topglyph--more   { --glyph: url("assets/icons/wb-top-more.svg"); }
+.wb__topglyph--expand { --glyph: url("assets/icons/wb-top-expand.svg"); }
+.wb__topglyph--close  { --glyph: url("assets/icons/wb-top-close.svg"); }
+#wbCopyLink.is-copied { color: var(--wb-action); }
+.wb__icon { display: flex; transition: opacity var(--t-fast) var(--ease); }
+@media (hover: hover) and (pointer: fine) {
+  .wb__icon:hover { opacity: 0.65; }
+}
+
+/* ── Content ── */
+
+.wb__content { flex: 1; min-height: 0; position: relative; }
+
+/* One panel per tab. Each fills the content area and scrolls on its own, so
+   switching tabs never inherits another tab's scroll position. */
+.wb__panel { display: none; position: absolute; inset: 0; overflow: auto; }
+.wb__panel.is-current { display: block; animation: fade-in var(--t-mid) var(--ease-enter); }
+.wb__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+  padding: 40px;
+}
+
+.wb__illo {
+  width: 462px;
+  height: 135px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.wb__tile {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5.667px;
+  overflow: hidden;
+}
+.wb__tile--stripe {
+  background: #2F105F;
+  border: 1px solid #5017B7;
+  box-shadow: 0 0 51px rgba(82,0,255,0.84);
+}
+.wb__tile--platform {
+  background: #062059;
+  border: 1px solid #0F3D99;
+  box-shadow: 0 0 51px rgba(0,41,255,0.84);
+}
+.wb__wire { flex: 1; min-width: 0; display: flex; }
+.wb__wire img { width: 100%; height: 1px; }
+.wb__wire--head img { height: 7.364px; }
+
+.wb__json {
+  flex: none;
+  width: 187.409px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 12px 8px 12px 17px;
+  border: 1px solid var(--wb-line);
+  border-radius: 8px;
+  font-family: Menlo, ui-monospace, monospace;
+  font-size: 9.142px;
+  line-height: 15.237px;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+.wb__json p { display: flex; align-items: baseline; }
+.wb__json p > :first-child { margin-right: 9.142px; }   /* the design's fixed-width gap */
+.wb__json span { color: var(--wb-text); }
+.wb__json em   { font-style: normal; font-size: 10.666px; color: var(--wb-subdued); }
+.wb__json em.is-val { font-size: inherit; }
+.wb__json b    { font-weight: 400; color: #3EAE20; }  /* Text/Feedback Success, dark */
+.wb__json i    { font-style: normal; color: #2B9DF6; } /* Text/Feedback Info, dark */
+
+.wb__hero {
+  width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 4px;
+}
+.wb__hero h2 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  font-feature-settings: "lnum" 1, "pnum" 1;
+}
+.wb__hero p {
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: -0.31px;
+  font-feature-settings: "lnum" 1, "tnum" 1;
+}
+
+.wb__modules { width: 560px; display: flex; flex-direction: column; gap: 16px; }
+.wb__module {
+  height: 100px;
+  padding: 16px;
+  border: 1px solid var(--wb-line);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.wb__mtitle { font-weight: 600; }
+.wb__mbody { display: flex; align-items: flex-start; }
+.wb__mbody p { flex: 1; min-width: 280px; }
+.wb__link {
   display: inline-flex;
   align-items: center;
-  padding: 0 6px;
-  border: 1px solid var(--taskbar-line);
-  border-radius: 4px;
-  font-size: 12px;
+  gap: 4px;
   font-weight: 600;
-  color: var(--taskbar-badge);
-}
-.taskbar__utils { display: flex; align-items: center; gap: 16px; }
-.taskbar__utils img {
-  width: 16px; height: 16px;
+  color: var(--wb-action);
   cursor: pointer;
-  transition: opacity var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
-.taskbar__utils img.is-sm { width: 12px; height: 12px; }
+.wb__link img { transition: transform var(--t-fast) var(--ease); }
 @media (hover: hover) and (pointer: fine) {
-  .taskbar__utils img:hover { opacity: 0.65; transform: translateY(-1px); }
+  .wb__link:hover img { transform: translateX(2px); }
 }
-.taskbar__divider { width: 1px; height: 16px; background: var(--taskbar-line); }
+
+/* ── Events ── */
+
+.wb__panel--events.is-current { display: flex; flex-direction: column; overflow: hidden; }
+.wb {
+  --ev-mono:   ui-monospace, Menlo, monospace;
+  --ev-str:    #6CC56A;   /* string values */
+  --ev-bool:   #2B9DF6;   /* Text/Feedback Info, dark */
+  --ev-select: #7A73FF;
+}
+
+/* Glyphs are the light UI's own icons, recoloured through a mask */
+.ev__glyph {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  background: currentColor;
+  -webkit-mask: var(--glyph) center / contain no-repeat;
+          mask: var(--glyph) center / contain no-repeat;
+}
+.ev__glyph--search { --glyph: url("assets/icons/wb-search.svg"); }
+.ev__glyph--add    { --glyph: url("assets/icons/wb-plus.svg"); }
+.ev__glyph--copy   { --glyph: url("assets/icons/cad-clipboard.svg"); width: 12px; height: 16px; }
+
+.ev__bar {
+  flex: none;
+  height: 64px;
+  display: flex;
+  border-bottom: 1px solid var(--wb-line);
+}
+.ev__env {
+  width: 240px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-right: 1px solid var(--wb-line);
+  font-size: 15px;
+}
+.ev__updown { display: flex; flex-direction: column; gap: 2px; color: var(--wb-subdued); }
+.ev__updown i {
+  width: 8px;
+  height: 5px;
+  background: currentColor;
+  -webkit-mask: url("assets/icons/chevron-up.svg") center / 8px 8px no-repeat;
+          mask: url("assets/icons/chevron-up.svg") center / 8px 8px no-repeat;
+}
+.ev__updown i + i {
+  -webkit-mask-image: url("assets/icons/chevron-down-8.svg");
+          mask-image: url("assets/icons/chevron-down-8.svg");
+}
+
+.ev__filters { display: flex; align-items: center; gap: 10px; padding: 0 16px; }
+.ev__search {
+  width: 210px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 14px;
+  padding: 0 10px;
+  border: 1px solid #3E444F;
+  border-radius: 6px;
+  color: var(--wb-subdued);
+  transition: border-color var(--t-fast) var(--ease);
+}
+.ev__search:focus-within { border-color: var(--ev-select); }
+.ev__search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  font: inherit;
+  color: var(--wb-text);
+}
+.ev__search input::placeholder { color: #6A7383; }
+.ev__pill {
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid #2F343D;
+  border-radius: 13px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wb-text);
+  transition: border-color var(--t-fast) var(--ease);
+}
+.ev__pill .ev__glyph { color: var(--wb-subdued); }
+@media (hover: hover) and (pointer: fine) {
+  .ev__pill:hover { border-color: #4A515D; }
+}
+
+.ev__panes { flex: 1; min-height: 0; display: flex; }
+
+.ev__listpane {
+  width: 50%;
+  flex: none;
+  overflow: auto;
+  padding: 0 16px 16px;
+  border-right: 1px solid var(--wb-line);
+}
+.ev__listhead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 8px 10px;
+  background: var(--wb-bg);
+  font-size: 13px;
+}
+.ev__day { flex: 1; font-weight: 600; }
+.ev__updated { color: var(--wb-subdued); }
+.ev__refresh { color: var(--wb-action); font-size: 13px; }
+
+.ev__row {
+  width: 100%;
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 10px;
+  text-align: left;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  position: relative;
+  transition: background-color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+/* Dividers sit between rows, and give way around the selected one */
+.ev__row + .ev__row::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1px;
+  height: 1px;
+  background: var(--wb-line);
+}
+.ev__row.is-selected::before,
+.ev__row.is-selected + .ev__row::before { display: none; }
+.ev__row.is-selected { border-color: var(--ev-select); background: rgba(122,115,255,0.06); }
+@media (hover: hover) and (pointer: fine) {
+  .ev__row:not(.is-selected):hover { background: rgba(255,255,255,0.03); }
+}
+.ev__rowtext { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ev__type {
+  font-family: var(--ev-mono);
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0;
+  color: var(--wb-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ev__type em { font-style: normal; color: var(--wb-subdued); }
+.ev__row.is-selected .ev__type { color: var(--wb-action); font-weight: 700; }
+.ev__row.is-selected .ev__type em { color: inherit; }
+.ev__rowdesc {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--wb-subdued);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ev__time { flex: none; color: var(--wb-text); font-variant-numeric: tabular-nums; }
+.ev__none { display: none; padding: 24px 8px; color: var(--wb-subdued); }
+.ev__listpane.is-empty .ev__none { display: block; }
+.ev__list.is-refreshing { animation: fade-in var(--t-base) var(--ease-enter); }
+
+.ev__detail { flex: 1; min-width: 0; overflow: auto; padding: 16px 20px 24px; }
+.ev__label { font-size: 13px; font-weight: 600; color: var(--wb-subdued); }
+.ev__title {
+  margin-top: 2px;
+  font-family: var(--ev-mono);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 700;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+.ev__desc { margin-top: 4px; color: var(--wb-subdued); }
+.ev__props { margin-top: 16px; display: flex; flex-direction: column; gap: 2px; }
+.ev__props > div { display: grid; grid-template-columns: 136px 1fr; }
+.ev__props dt { color: var(--wb-subdued); }
+.ev__props dd { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ev__id { color: var(--wb-text); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+.ev__section { margin-top: 32px; font-size: 15px; font-weight: 600; }
+
+.ev__code {
+  margin-top: 12px;
+  border: 1px solid var(--wb-line);
+  border-radius: 8px;
+  background: var(--wb-offset);
+  overflow: hidden;
+}
+.ev__codehead {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px 0 16px;
+  border-bottom: 1px solid var(--wb-line);
+  font-size: 13px;
+  font-weight: 600;
+}
+.ev__copy { display: flex; color: var(--wb-action); transition: opacity var(--t-fast) var(--ease); }
+.ev__copy.is-copied { opacity: 0.5; }
+.ev__json {
+  margin: 0;
+  padding: 12px 16px 16px 8px;
+  overflow-x: auto;
+  font-family: var(--ev-mono);
+  font-size: 13px;
+  line-height: 21px;
+  color: var(--wb-text);
+}
+/* Each line carries a gutter for the collapse toggle, then its indent */
+.ev__ln { display: block; padding-left: calc(18px + var(--d, 0) * 2ch); position: relative; white-space: pre; }
+.ev__tog {
+  position: absolute;
+  left: calc(var(--d, 0) * 2ch);
+  top: 0;
+  width: 18px;
+  height: 21px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--wb-subdued);
+}
+.ev__tog::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: currentColor;
+  -webkit-mask: url("assets/icons/chevron-down-8.svg") center / 8px 8px no-repeat;
+          mask: url("assets/icons/chevron-down-8.svg") center / 8px 8px no-repeat;
+  transition: transform var(--t-fast) var(--ease);
+}
+.ev__node.is-folded > .ev__ln > .ev__tog::before { transform: rotate(-90deg); }
+.ev__node.is-folded > .ev__kids,
+.ev__node.is-folded > .ev__close { display: none; }
+.ev__fold { display: none; color: var(--wb-subdued); }
+.ev__node.is-folded > .ev__ln .ev__fold { display: inline; }
+.ev__json .k { color: var(--wb-text); }
+.ev__json .s { color: var(--ev-str); }
+.ev__json .i { color: var(--wb-action); }
+.ev__json .n { color: var(--ev-str); }
+.ev__json .b { color: var(--ev-bool); }
+.ev__json .z { color: var(--wb-subdued); }
+
+/* More glyphs for the dark panels */
+.ev__glyph--check    { --glyph: url("assets/icons/dlg-check.svg"); }
+.ev__glyph--info     { --glyph: url("assets/icons/co-info.svg"); }
+.ev__glyph--gear     { --glyph: url("assets/icons/settings.svg"); }
+.ev__glyph--explorer { --glyph: url("assets/icons/wb-explorer.svg"); }
+.ev__glyph--code     { --glyph: url("assets/icons/api.svg"); }
+/* ⊗ — the ⊕ ring with the cancel glyph inside */
+.ev__glyph--remove {
+  -webkit-mask: none;
+          mask: none;
+  background: none;
+  border: 1.25px solid currentColor;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ev__glyph--remove::after {
+  content: '';
+  width: 5px;
+  height: 5px;
+  background: currentColor;
+  -webkit-mask: url("assets/icons/cancel.svg") center / contain no-repeat;
+          mask: url("assets/icons/cancel.svg") center / contain no-repeat;
+}
+
+/* A filter that's set: its value follows a divider, in the action colour */
+.ev__pillval {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 2px;
+  padding-left: 8px;
+  border-left: 1px solid #3E444F;
+  color: var(--wb-action);
+}
+.ev__caret {
+  width: 8px;
+  height: 8px;
+  background: currentColor;
+  -webkit-mask: url("assets/icons/chevron-down-8.svg") center / 8px 8px no-repeat;
+          mask: url("assets/icons/chevron-down-8.svg") center / 8px 8px no-repeat;
+}
+
+/* ── Logs ── */
+
+.lg__subtabs {
+  flex: none;
+  display: flex;
+  gap: 32px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--wb-line);
+}
+.lg__subtab {
+  padding: 12px 0 10px;
+  border-bottom: 2px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wb-text);
+}
+.lg__subtab.is-current { color: var(--wb-action); border-bottom-color: var(--wb-action); }
+
+.lg__bar { align-items: center; justify-content: space-between; padding-right: 16px; }
+/* Filters run on in one line and scroll sideways when the sheet is narrower
+   than the set; the fade says there's more past the edge. */
+.lg__bar .ev__filters {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
+          mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
+}
+.lg__bar .ev__filters::-webkit-scrollbar { display: none; }
+.lg__bar .ev__search { margin-right: 6px; }
+.ev__pill { white-space: nowrap; flex: none; }
+.lg__textbtn { flex: none; font-size: 14px; color: var(--wb-action); white-space: nowrap; }
+.lg__columns {
+  flex: none;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 1px solid #2F343D;
+  border-radius: 6px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.lg__row { min-height: 42px; }
+.lg__code { display: inline-flex; align-items: center; gap: 6px; width: 64px; flex: none; color: #6CC56A; }
+.lg__code.is-error { color: #F46B7D; }
+.lg__method { width: 48px; flex: none; font-family: var(--ev-mono); color: #8EA2FF; letter-spacing: 0; }
+.ev__row.is-selected .lg__method { font-weight: 400; }
+.lg__method--get { color: #6CC56A; }
+.lg__method--delete { color: #F46B7D; }
+.ev__title .lg__method { width: auto; margin-right: 8px; }
+
+.lg__props > div { grid-template-columns: 176px 1fr; }
+.lg__status { display: flex; align-items: center; gap: 6px; color: #6CC56A; }
+.lg__props dd { display: flex; align-items: center; gap: 8px; }
+.lg__aside { color: var(--wb-subdued); }
+.lg__props .ev__glyph--info { color: var(--wb-subdued); }
+.lg__props dd.lg__wrap { white-space: normal; display: block; }
+
+/* ── Webhooks ── */
+
+.wh { width: 560px; max-width: 100%; margin: 0 auto; padding: 40px 0; }
+.wh__title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+.wh__lede { margin-top: 8px; font-size: 15px; line-height: 22px; }
+.wh__ctas { margin-top: 28px; display: flex; flex-direction: column; align-items: center; gap: 18px; }
+.wh__add { gap: 6px; }
+.wh__plus {
+  width: 12px;
+  height: 12px;
+  background: currentColor;
+  -webkit-mask: url("assets/icons/add.svg") center / contain no-repeat;
+          mask: url("assets/icons/add.svg") center / contain no-repeat;
+}
+.wh__cards { margin-top: 28px; display: flex; flex-direction: column; gap: 16px; }
+.wh__card { padding: 18px 16px 16px; border-radius: 8px; background: #1C1F27; }
+.wh__card h4 { font-size: 16px; line-height: 24px; font-weight: 600; }
+.wh__card p { margin-top: 6px; }
+.wh__link {
+  margin-top: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--wb-action);
+  text-decoration: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .wh__link:hover { text-decoration: underline; text-underline-offset: 3px; }
+}
+.wh__ext {
+  width: 12px;
+  height: 12px;
+  background: currentColor;
+  -webkit-mask: url("assets/icons/wb-top-expand.svg") center / contain no-repeat;
+          mask: url("assets/icons/wb-top-expand.svg") center / contain no-repeat;
+}
+
+/* ── Blueprints ── */
+
+.bp__head { flex: none; padding: 20px 16px 16px; border-bottom: 1px solid var(--wb-line); }
+.bp__title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+.bp__sub { margin-top: 2px; color: var(--wb-subdued); }
+.bp__filters { padding: 0; margin-top: 16px; }
+
+.bp__body { flex: 1; min-height: 0; overflow: auto; padding: 32px 48px 40px; }
+.bp__section + .bp__section { margin-top: 40px; }
+.bp__stitle { font-size: 16px; line-height: 24px; font-weight: 600; }
+.bp__ssub { color: var(--wb-subdued); }
+.bp__grid {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.bp__card {
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  border-radius: 8px;
+  background: #1C1F27;
+  text-align: left;
+  transition: background-color var(--t-fast) var(--ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .bp__card:hover { background: #22262F; }
+}
+.bp__ctitle { font-size: 16px; line-height: 24px; font-weight: 600; }
+.bp__ctitle code { font-family: var(--ev-mono); font-size: 15px; font-weight: 700; letter-spacing: 0; }
+/* Two lines, then an ellipsis — as the dashboard clips them */
+.bp__cdesc {
+  color: var(--wb-subdued);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.bp__meta { margin-top: auto; padding-top: 16px; font-size: 12px; line-height: 16px; color: var(--wb-subdued); }
+.bp__none { color: var(--wb-subdued); }
+
+/* ── Shell ── */
+
+.wb__panel--shell.is-current { display: flex; overflow: hidden; }
+.sh__term { flex: 1; min-width: 0; position: relative; display: flex; flex-direction: column; }
+.sh__tools { position: absolute; top: 10px; right: 16px; z-index: 1; display: flex; gap: 6px; }
+.sh__tool {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: var(--wb-subdued);
+  transition: background-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.sh__tool.is-on { background: #252836; color: var(--wb-action); }
+
+/* Output sits on the floor, the way a terminal fills from the bottom */
+.sh__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 16px 12px;
+  font-family: var(--ev-mono);
+  font-size: 14px;
+  line-height: 21px;
+  letter-spacing: 0;
+}
+.sh__welcome { margin-top: auto; }
+.sh__welcome.is-gone { display: none; }
+.sh__welcome.is-gone + .sh__out { margin-top: auto; }
+.sh__dismiss { display: flex; margin-bottom: 18px; color: var(--wb-text); }
+.sh__art {
+  margin: 0 0 12px;
+  font: inherit;
+  font-size: 10px;
+  line-height: 13px;
+  color: var(--wb-action);
+}
+.sh__welcome p, .sh__out p { white-space: pre-wrap; overflow-wrap: anywhere; }
+.sh__cmd { color: var(--wb-action); }
+@media (hover: hover) and (pointer: fine) {
+  .sh__cmd:hover { text-decoration: underline; text-underline-offset: 3px; }
+}
+.sh__out .is-cmd { color: var(--wb-text); }
+.sh__out .is-dim { color: var(--wb-subdued); }
+.sh__out .is-ok { color: #6CC56A; }
+.sh__out .is-err { color: #F46B7D; }
+.sh__out .ev__json { padding: 0; }
+.sh__out .ev__ln { padding-left: calc(var(--d, 0) * 2ch); }
+.sh__out .ev__tog { display: none; }
+.sh__prompt { display: flex; align-items: center; color: var(--wb-text); cursor: text; }
+.sh__prompt span { flex: none; white-space: pre; }
+.sh__prompt input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  color: var(--wb-text);
+  caret-color: var(--wb-action);
+}
+
+.sh__explorer {
+  width: 36%;
+  max-width: 560px;
+  min-width: 360px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--wb-line);
+}
+.wb__panel--shell.no-explorer .sh__explorer { display: none; }
+.sh__xtitle {
+  height: 52px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--wb-line);
+  font-size: 17px;
+  font-weight: 600;
+}
+.sh__xfields { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-content: start; padding: 24px 16px; }
+.sh__field { display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; }
+.sh__select { position: relative; display: flex; }
+.sh__select select {
+  -webkit-appearance: none;
+          appearance: none;
+  width: 100%;
+  height: 32px;
+  padding: 0 28px 0 10px;
+  border: 1px solid #3E444F;
+  border-radius: 6px;
+  background: var(--wb-bg);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--wb-text);
+  cursor: pointer;
+}
+.sh__select select:disabled { background: var(--wb-offset); border-color: var(--wb-line); color: #6A7383; cursor: default; }
+.sh__select select:focus-visible { outline: 0; border-color: var(--ev-select); }
+.sh__select .ev__updown { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--wb-text); }
+.sh__select select:disabled + .ev__updown { color: #6A7383; }
+
+.sh__xfoot {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--wb-line);
+}
+.sh__xfoot .lg__textbtn { margin-right: auto; }
+.sh__btn {
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid #2F343D;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: opacity var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease);
+}
+.sh__btn--primary { background: var(--action-primary); border-color: var(--action-primary); color: #fff; }
+.sh__btn--primary:disabled { opacity: 0.45; cursor: default; }
+
+
+/* ── Shell prompt row ── */
+
+.wb__promptrow {
+  flex: none;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 16px;
+  border-top: 1px solid var(--wb-line);
+}
+.wb.on-shell .wb__promptrow { display: none; }
+.wb__shell {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  font-family: var(--ev-mono);
+  font-size: 14px;
+  letter-spacing: 0;
+  cursor: text;
+}
+.wb__prompt { flex: none; color: var(--wb-text); white-space: pre; }
+.wb__shell input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  color: var(--wb-text);
+  caret-color: var(--wb-action);
+}
+.wb__shell input::placeholder { color: #636C7B; }
+.wb__promptutils { display: flex; align-items: center; gap: 18px; color: var(--wb-text); }
 
 /* ───────── Backdrop + dialog ───────── */
 
@@ -2569,6 +3502,13 @@ button.task.is-locked:hover { background: none; }
   padding: 40px;
   position: relative;
   overflow: hidden;
+  /* The pane is the room the card is held in. Perspective belongs here rather
+     than on the card, so the projection is fixed to the viewer and the card's
+     own rotations read against it — the same 9° looks different at the top of
+     the pane than the bottom, which is what makes it a place and not an
+     effect. Long, because a short perspective makes a 300px card look like a
+     playing card held at arm's length. */
+  perspective: 1400px;
 }
 
 /* The wash is the first thing to answer the user: it starts arriving on the
@@ -2604,6 +3544,15 @@ button.task.is-locked:hover { background: none; }
      printed card's frosting depends on .preview__grain's backdrop-filter
      reaching past the card to the wash behind it. */
   transition: border-color var(--t-base) var(--ease), background var(--t-base) var(--ease);
+  /* Composed here, written from script as five numbers. The order is the
+     physical one: push it out of the pane, bob it, then turn it about its own
+     centre. Sitting at their defaults this resolves to no movement at all, so
+     the card before it lifts is the card as it always was. */
+  transform:
+    translate3d(0, var(--float-y, 0px), var(--float-z, 0px))
+    rotateX(var(--float-rx, 0deg))
+    rotateY(var(--float-ry, 0deg))
+    rotateZ(var(--float-rz, 0deg));
 }
 .preview.is-filled { background: var(--surface); border-color: var(--neutral-200); }
 
@@ -2770,17 +3719,55 @@ button.task.is-locked:hover { background: none; }
      the fade out of the white live-modelling state cannot dip through grey. */
   background: rgba(255,255,255,0);
   border-color: transparent;
+  /* The cast shadow takes an offset from the tilt (script, `--float-s*`), so
+     the card leaning one way throws its shadow the other. At rest both are 0
+     and this is the design's shadow untouched. */
   box-shadow:
     0 1px 0 0 rgba(10,37,64,0.12),
-    0 60px 60px -40px rgba(50,72,93,0.25),
+    var(--float-sx, 0px) calc(60px + var(--float-sy, 0px)) 60px -40px rgba(50,72,93,0.25),
     inset -1px 0 0 0 #fff,
     inset 0 1px 0 0 #fff;
 }
+
+/* No website is no brand, and no brand is nothing to take a colour from. The
+   card still prints — it has a name on it and it earns the same object
+   treatment — but the tile stays grey and the initials carry it.
+   A step down from the live-modelling grey rather than the same one: that grey
+   was read against an empty white panel, and against printed paper it
+   disappears altogether. */
+.preview.is-mono .preview__logo.is-filled {
+  background: var(--neutral-100);
+  color: var(--neutral-700);
+}
+
+/* ── Surface (only while floating) ────────
+   A flat card that turns is a picture of a card turning. What sells it as a
+   surface is a highlight that stays put while the card moves under it, so the
+   sheen's centre is written from the tilt and travels the opposite way.
+   Kept weak — it crosses the business name, and a glare that costs legibility
+   has stopped being a highlight. No blend mode on purpose: the card's frosting
+   depends on the grain's backdrop-filter reaching the wash behind, and another
+   blended layer in here is the one thing that would isolate it. */
+.preview__sheen {
+  position: absolute;
+  inset: -1px;
+  border-radius: 16px;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    130% 100% at var(--sheen-x, 50%) var(--sheen-y, 18%),
+    rgba(255,255,255,0.30) 0%,
+    rgba(255,255,255,0.10) 34%,
+    rgba(255,255,255,0)    62%);
+  transition: opacity var(--t-slow) var(--ease);
+}
+.preview.is-float .preview__sheen { opacity: 1; }
 /* Everything sits above the card art (the absolutely-placed pieces keep theirs) */
 .preview__head, .preview__chip { position: relative; z-index: 1; }
 .preview__vector, .preview__stripe { z-index: 1; }
 
-.preview.is-color .preview__logo { background: var(--card-green); color: #fff; }
+.preview.is-color:not(.is-mono) .preview__logo { background: var(--card-green); color: #fff; }
 .preview.is-color .preview__name { color: var(--neutral-900); }
 
 .preview__dot { display: none; width: 4px; height: 4px; border-radius: 4px; background: var(--brand); }
@@ -2813,7 +3800,6 @@ button.task.is-locked:hover { background: none; }
   /* Keyframes that carry movement */
   .task.is-done .task__label,
   .preview__chip.is-bump,
-  .guide__group--open .guide__tasks,
   .task.is-done .task__dot::before { animation: none !important; }
 
   /* Product marks take their slot instantly and only the fade survives. Their
@@ -2833,13 +3819,21 @@ button.task.is-locked:hover { background: none; }
   .reveal { transition-property: opacity !important; }
 
   /* Transitions that travel. The opacity halves of these still run. */
+  /* The float never starts under reduced motion — the script won't run it — so
+     `.preview` here is only holding the door shut. */
   .modal, .modal.is-leaving,
   .dialog, .dialog.is-leaving,
   .tooltip,
+  .preview,
   .preview__logo.is-filled,
   .btn:hover, .btn:active,
   .model:active,
   .toolbar img:hover,
   .cadhead__back:hover,
-  .taskbar__utils img:hover { transform: none !important; }
+  .taskbar__utils img:hover,
+  .wb__link:hover img { transform: none !important; }
+
+  /* The workbench doesn't travel; it fades in place over the page */
+  .wb { transform: none !important; opacity: 0; transition: opacity var(--t-base) var(--ease), visibility 0s linear var(--t-base) !important; }
+  .wb.is-open { opacity: 1; transition: opacity var(--t-base) var(--ease), visibility 0s !important; }
 }

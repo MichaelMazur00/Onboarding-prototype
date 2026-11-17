@@ -448,7 +448,7 @@
                   <tbody>
                     <tr id="paymentRow">
                       <td><span class="mmtable__money">
-                        <span class="mmtable__amt">$500.00</span>
+                        <span class="mmtable__amt">$10.00</span>
                         <span class="mmtable__cur">USD</span>
                         <span class="badge badge--paid">Paid</span>
                       </span></td>
@@ -539,7 +539,11 @@
                     </div>
                     <div class="pbrow">
                       <span class="pbrow__label">Payment amount</span>
-                      <span class="pbrow__amt">+ $8.18</span><span class="pbrow__cur">USD</span>
+                      <span class="pbrow__amt">+ $10.00</span><span class="pbrow__cur">USD</span>
+                    </div>
+                    <div class="pbrow">
+                      <span class="pbrow__label">Platform fee <img class="pbrow__info" src="assets/icons/pd-info.svg" alt="" /></span>
+                      <span class="pbrow__amt">- $1.00</span><span class="pbrow__cur">USD</span>
                     </div>
                     <div class="pbrow">
                       <span class="pbrow__label">Cactus practice processing fee <img class="pbrow__info" src="assets/icons/pd-info.svg" alt="" /></span>
@@ -547,7 +551,7 @@
                     </div>
                     <div class="pbrow pbrow--total">
                       <span class="pbrow__label">Net amount</span>
-                      <span class="pbrow__amt">+ $10.00</span><span class="pbrow__cur">USD</span>
+                      <span class="pbrow__amt">+ $7.18</span><span class="pbrow__cur">USD</span>
                     </div>
                   </section>
 
@@ -641,11 +645,14 @@
           </div>
 
           <div class="reveal guide__reveal guide__reveal--summary">
-            <div class="reveal__inner guide__summary">Next: <button class="guide__next" id="guideNext" data-route="#connect">Choose your business model</button></div>
+            <!-- The padding sits inside the clipper, never on it: `.reveal__inner`
+                 is what collapses to nothing, and a box cannot be shorter than
+                 its own padding. -->
+            <div class="reveal__inner"><p class="guide__summary">Next: <button class="guide__next" id="guideNext" data-route="#connect">Choose your business model</button></p></div>
           </div>
 
           <div class="reveal guide__reveal guide__reveal--groups">
-            <div class="reveal__inner guide__groups">
+            <div class="reveal__inner"><div class="guide__groups">
               <div class="guide__group guide__group--open" data-group>
                 <button class="guide__row">
                   <span class="guide__grouptitle">Test Connect</span>
@@ -654,13 +661,21 @@
                     <img class="guide__chev chev-down" src="assets/icons/chevron-down-8.svg" alt="" />
                   </span>
                 </button>
-                <div class="guide__tasks">
-                  <button class="task is-next" id="taskBusinessModel">
-                    <span class="task__dot"></span><span class="task__label">Choose your business model</span>
-                  </button>
-                  <button class="task is-locked" id="taskTestAccount" aria-disabled="true"><span class="task__dot"></span><span class="task__label">Create a test account</span></button>
-                  <button class="task is-locked" id="taskTestCharge" aria-disabled="true"><span class="task__dot"></span><span class="task__label">Create a test charge</span></button>
-                  <button class="task is-locked" id="taskIntegrationGuide" aria-disabled="true"><span class="task__dot"></span><span class="task__label">View your integration guide</span></button>
+                <!-- Same disclosure primitive the whole panel uses, so a group
+                     closes by giving its height back rather than blinking out. -->
+                <div class="reveal guide__reveal--tasks">
+                  <div class="reveal__inner"><div class="guide__tasks">
+                    <button class="task is-next" id="taskBusinessModel">
+                      <span class="task__dot"></span><span class="task__label">Choose your business model</span>
+                    </button>
+                    <button class="task is-locked" id="taskTestAccount" aria-disabled="true"><span class="task__dot"></span><span class="task__label">Create a test account</span></button>
+                    <button class="task is-locked" id="taskTestCharge" aria-disabled="true"><span class="task__dot"></span><span class="task__label">Create a test charge</span></button>
+                    <button class="task is-locked" id="taskIntegrationGuide" aria-disabled="true"><span class="task__dot"></span><span class="task__label">View your integration guide</span></button>
+                    <!-- TESTING: unlocked from the start. To gate it behind the first four
+                         steps again, restore `class="task is-locked"` and
+                         `aria-disabled="true"` — completeThrough(3) unlocks it. -->
+                    <button class="task is-unlocked" id="taskInviteDevelopers"><span class="task__dot"></span><span class="task__label">Invite your developers</span></button>
+                  </div></div>
                 </div>
               </div>
 
@@ -672,42 +687,361 @@
                     <img class="guide__chev chev-down" src="assets/icons/chevron-down-8.svg" alt="" />
                   </span>
                 </button>
-                <div class="guide__tasks">
-                  <button class="task" id="taskVerifyIdentity"><span class="task__dot"></span><span class="task__label">Verify your identity</span></button>
-                  <button class="task" id="taskVerifyBusiness"><span class="task__dot"></span><span class="task__label">Verify your business</span></button>
+                <div class="reveal guide__reveal--tasks">
+                  <div class="reveal__inner"><div class="guide__tasks">
+                    <button class="task" id="taskVerifyIdentity"><span class="task__dot"></span><span class="task__label">Verify your identity</span></button>
+                    <button class="task" id="taskVerifyBusiness"><span class="task__dot"></span><span class="task__label">Verify your business</span></button>
+                  </div></div>
                 </div>
               </div>
 
+              <!-- Locked like the steps inside the groups above are: a button so
+                   it is a hover and focus target that can explain itself, held
+                   back by aria-disabled rather than by being inert markup. -->
               <div class="guide__group">
-                <div class="guide__row">
+                <button class="guide__row guide__row--locked" aria-disabled="true"
+                        data-tip="Verify your business first">
                   <span class="guide__grouptitle">Go live</span>
                   <img class="guide__chev guide__chev--lock" src="assets/icons/lock.svg" alt="" />
-                </div>
+                </button>
               </div>
-            </div>
+            </div></div>
           </div>
         </aside>
       </div>
 
       <!-- Workbench taskbar -->
+      <!-- Developers bar — always docked. Workbench rises out from behind it,
+           so it reads the same with the sheet open or shut. -->
       <footer class="taskbar" id="taskbar">
-        <div class="taskbar__brand">
-          <span>Workbench</span>
-          <span class="taskbar__badge">~</span>
-        </div>
+        <button class="taskbar__brand" id="taskbarOpen" aria-controls="workbench" aria-expanded="false">
+          <i class="tb__glyph tb__glyph--dev"></i>Developers
+        </button>
         <div class="taskbar__utils">
-          <img src="assets/icons/tb-explorer.svg" alt="Explorer" />
-          <i class="taskbar__divider"></i>
-          <img src="assets/icons/tb-transfer.svg" alt="Transfers" />
-          <img src="assets/icons/tb-webhook.svg" alt="Webhooks" />
-          <i class="taskbar__divider"></i>
-          <img src="assets/icons/tb-settings.svg" alt="Settings" />
-          <i class="taskbar__divider"></i>
-          <img class="is-sm" src="assets/icons/tb-chevron-down.svg" alt="Minimise" />
-          <img class="is-sm" src="assets/icons/tb-arrows-outward.svg" alt="Expand" />
-          <img class="is-sm" src="assets/icons/tb-cancel.svg" alt="Close" />
+          <span class="taskbar__acct"><img src="assets/icons/wb-explorer.svg" alt="" />acct_1Uct2JIQXbeqTFVg</span>
+          <img src="assets/icons/wb-notifications.svg" alt="Notifications" />
+          <img src="assets/icons/wb-transfer.svg" alt="Transfers" />
+          <img src="assets/icons/wb-webhook.svg" alt="Webhooks" />
+          <button class="taskbar__toggle" id="taskbarToggle" aria-controls="workbench" aria-label="Open Workbench"><i class="tb__glyph tb__glyph--chev"></i></button>
         </div>
       </footer>
+
+      <!-- ───────── Workbench sheet, open (Figma 21:51315) ─────────
+           Rises from behind the Developers bar above, which stays put. -->
+      <section class="wb" id="workbench" role="dialog" aria-label="Workbench" aria-hidden="true">
+        <header class="wb__nav">
+          <span class="wb__handle"></span>
+          <div class="wb__tabs" role="tablist" aria-label="Workbench">
+            <button class="wb__tab is-current" role="tab" aria-selected="true" data-tab="overview">Overview</button>
+            <button class="wb__tab" role="tab" aria-selected="false" data-tab="webhooks">Webhooks</button>
+            <button class="wb__tab" role="tab" aria-selected="false" data-tab="events">Events</button>
+            <button class="wb__tab" role="tab" aria-selected="false" data-tab="logs">Logs</button>
+            <button class="wb__tab" role="tab" aria-selected="false" data-tab="inspector">Inspector</button>
+            <button class="wb__tab" role="tab" aria-selected="false" data-tab="blueprints">Blueprints</button>
+            <button class="wb__tab" role="tab" aria-selected="false" data-tab="extension-runs">Extension runs</button>
+            <button class="wb__tab" role="tab" aria-selected="false" data-tab="shell">Shell</button>
+          </div>
+          <div class="wb__utils">
+            <button class="wb__icon" id="wbCopyLink" aria-label="Copy link"><i class="wb__topglyph wb__topglyph--link"></i></button>
+            <i class="wb__sep"></i>
+            <button class="wb__icon" aria-label="More options"><i class="wb__topglyph wb__topglyph--more"></i></button>
+            <button class="wb__icon" aria-label="Expand"><i class="wb__topglyph wb__topglyph--expand"></i></button>
+            <button class="wb__icon" id="wbClose" aria-label="Close Workbench"><i class="wb__topglyph wb__topglyph--close"></i></button>
+          </div>
+        </header>
+
+        <div class="wb__content">
+          <!-- Overview (Figma 21:51318) -->
+          <div class="wb__panel is-current" data-panel="overview">
+          <div class="wb__empty">
+            <!-- Stripe → an API object → your platform -->
+            <div class="wb__illo" aria-hidden="true">
+              <span class="wb__tile wb__tile--stripe"><img src="assets/icons/wb-stripe.svg" alt="" /></span>
+              <span class="wb__wire"><img src="assets/icons/wb-arrow5.svg" alt="" /></span>
+              <div class="wb__json">
+                <p><span>"id":</span><em>"</em><span>cus_L82G0DAIEgLtBf</span><em>"</em><em>,</em></p>
+                <p><span>"address":</span><em class="is-val">null</em><em>,</em></p>
+                <p><span>"balance":</span><b>1000</b><em>,</em></p>
+                <p><span>"created":</span><b>1644536220</b><em>,</em></p>
+                <p><span>"currency":</span><em>"</em><span>USD</span><em>"</em><em>,</em></p>
+                <p><span>"default_source":</span><em class="is-val">null</em><em>,</em></p>
+                <p><span>"delinquent":</span><i>false</i><em>,</em></p>
+              </div>
+              <span class="wb__wire wb__wire--head"><img src="assets/icons/wb-arrow4.svg" alt="" /></span>
+              <span class="wb__tile wb__tile--platform"><img src="assets/icons/wb-platform.svg" alt="" /></span>
+            </div>
+
+            <div class="wb__hero">
+              <h2>Get started building with Connect</h2>
+              <p>Use our starter guide to help guide you through the process of getting your SaaS platform up and running.</p>
+            </div>
+
+            <div class="wb__modules">
+              <div class="wb__module">
+                <p class="wb__mtitle">Create an example SaaS platform</p>
+                <div class="wb__mbody">
+                  <p>Explore an example Connect SaaS platform in our new<br />sandbox experience to understand all the pieces.</p>
+                  <a class="wb__link">Get started <img src="assets/icons/wb-arrow-right.svg" alt="" /></a>
+                </div>
+              </div>
+              <div class="wb__module">
+                <p class="wb__mtitle">Create an example Marketplace</p>
+                <div class="wb__mbody">
+                  <p>Already familiar with all the parts that need to built? Dive straight into the details by looking at our documentation.</p>
+                  <a class="wb__link">Get started <img src="assets/icons/wb-arrow-right.svg" alt="" /></a>
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+
+          <!-- Webhooks (from the Webhooks screenshot) — the empty state -->
+          <div class="wb__panel" data-panel="webhooks">
+            <div class="wh">
+              <h3 class="wh__title">Trigger reactions in your integration with Stripe events</h3>
+              <p class="wh__lede">Add a destination to send Stripe events to a deployed webhook endpoint, Amazon EventBridge, or Azure Event Grid. During development, use the Stripe CLI to test with a local listener and inspect event payloads.</p>
+              <div class="wh__ctas">
+                <button class="sh__btn sh__btn--primary wh__add"><i class="wh__plus"></i>Add destination</button>
+                <button class="lg__textbtn" id="whListen">Test with a local listener</button>
+              </div>
+              <div class="wh__cards">
+                <div class="wh__card">
+                  <h4>Quickstart guide</h4>
+                  <p>Learn how to set up and deploy a webhook to listen to events from Stripe.</p>
+                  <a class="wh__link" href="https://docs.stripe.com/webhooks/quickstart" target="_blank" rel="noopener noreferrer">View quickstart <i class="wh__ext"></i></a>
+                </div>
+                <div class="wh__card">
+                  <h4>Receive Stripe events in your webhook endpoint</h4>
+                  <p>Listen to events in your Stripe account on your webhook endpoint so your integration can automatically trigger reactions.</p>
+                  <a class="wh__link" href="https://docs.stripe.com/webhooks" target="_blank" rel="noopener noreferrer">View docs <i class="wh__ext"></i></a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Events (from the Events screenshot). The list and the detail pane
+               are both rendered from EVENTS in app.js, so picking an event
+               rewrites the detail beside it. -->
+          <div class="wb__panel wb__panel--events" data-panel="events">
+            <div class="ev__bar">
+              <button class="ev__env">Furever sandbox <i class="ev__updown"><i></i><i></i></i></button>
+              <div class="ev__filters">
+                <label class="ev__search">
+                  <i class="ev__glyph ev__glyph--search"></i>
+                  <input type="text" id="evSearch" placeholder="Find event by ID..." autocomplete="off" spellcheck="false" />
+                </label>
+                <button class="ev__pill"><i class="ev__glyph ev__glyph--add"></i>Date</button>
+                <button class="ev__pill"><i class="ev__glyph ev__glyph--add"></i>Status</button>
+                <button class="ev__pill"><i class="ev__glyph ev__glyph--add"></i>Event type</button>
+                <button class="ev__pill"><i class="ev__glyph ev__glyph--add"></i>Resource</button>
+              </div>
+            </div>
+
+            <div class="ev__panes">
+              <div class="ev__listpane">
+                <div class="ev__listhead">
+                  <span class="ev__day">Today</span>
+                  <span class="ev__updated">Updated today <span id="evUpdated">8:32:09 PM</span> UTC</span>
+                  <button class="ev__refresh" id="evRefresh">Refresh</button>
+                </div>
+                <div class="ev__list" id="evList" role="listbox" aria-label="Events"></div>
+                <p class="ev__none" id="evNone">No events match that ID.</p>
+              </div>
+
+              <div class="ev__detail" id="evDetail" aria-live="polite">
+                <p class="ev__label">Event</p>
+                <h3 class="ev__title" id="evTitle"></h3>
+                <p class="ev__desc" id="evDesc"></p>
+                <dl class="ev__props">
+                  <div><dt>Event ID</dt><dd><a class="ev__id" id="evId"></a></dd></div>
+                  <div><dt>Origin date</dt><dd id="evDate"></dd></div>
+                  <div><dt>Source</dt><dd>Automatic</dd></div>
+                </dl>
+
+                <h4 class="ev__section">Event data</h4>
+                <div class="ev__code">
+                  <div class="ev__codehead">
+                    <span>Notification data</span>
+                    <button class="ev__copy" id="evCopy" aria-label="Copy event data"><i class="ev__glyph ev__glyph--copy"></i></button>
+                  </div>
+                  <pre class="ev__json" id="evJson"></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Logs (from the Logs screenshot) — rendered from REQUESTS in app.js -->
+          <div class="wb__panel wb__panel--events" data-panel="logs">
+            <div class="lg__subtabs" role="tablist" aria-label="Log type">
+              <button class="lg__subtab is-current" role="tab" aria-selected="true">API requests</button>
+              <button class="lg__subtab" role="tab" aria-selected="false">MCP tool calls</button>
+            </div>
+
+            <div class="ev__bar lg__bar">
+              <div class="ev__filters">
+                <label class="ev__search">
+                  <i class="ev__glyph ev__glyph--search"></i>
+                  <input type="text" id="lgSearch" placeholder="Filter by resource ID..." autocomplete="off" spellcheck="false" />
+                </label>
+                <button class="ev__pill"><i class="ev__glyph ev__glyph--add"></i>Connected account ID</button>
+                <button class="ev__pill"><i class="ev__glyph ev__glyph--add"></i>Date</button>
+                <button class="ev__pill"><i class="ev__glyph ev__glyph--add"></i>Status</button>
+                <button class="ev__pill is-set"><i class="ev__glyph ev__glyph--remove"></i>HTTP method<span class="ev__pillval">POST, DELETE<i class="ev__caret"></i></span></button>
+                <button class="ev__pill"><i class="ev__glyph ev__glyph--add"></i>API endpoint</button>
+                <button class="ev__pill"><i class="ev__glyph ev__glyph--add"></i>API version</button>
+                <button class="ev__pill"><i class="ev__glyph ev__glyph--add"></i>IP address</button>
+                <button class="ev__pill is-set"><i class="ev__glyph ev__glyph--remove"></i>More filters<span class="ev__pillval">+2 more</span></button>
+                <button class="lg__textbtn">Clear filters</button>
+                <button class="lg__textbtn">Reset filters</button>
+              </div>
+              <button class="lg__columns"><i class="ev__glyph ev__glyph--gear"></i>Edit columns</button>
+            </div>
+
+            <div class="ev__panes">
+              <div class="ev__listpane">
+                <div class="ev__listhead">
+                  <span class="ev__day">Today</span>
+                  <span class="ev__updated">Updated today <span id="lgUpdated">8:32:35 PM</span> UTC</span>
+                  <button class="ev__refresh" id="lgRefresh">Refresh</button>
+                </div>
+                <div class="ev__list" id="lgList" role="listbox" aria-label="API requests"></div>
+                <p class="ev__none">No requests match that resource ID.</p>
+              </div>
+
+              <div class="ev__detail" id="lgDetail" aria-live="polite">
+                <p class="ev__label">API request</p>
+                <h3 class="ev__title" id="lgTitle"></h3>
+                <dl class="ev__props lg__props">
+                  <div><dt>Status</dt><dd class="lg__status"><i class="ev__glyph ev__glyph--check"></i><span id="lgStatus"></span></dd></div>
+                  <div><dt>Request ID</dt><dd><a class="ev__id" id="lgReq"></a></dd></div>
+                  <div><dt>Time</dt><dd id="lgTime"></dd></div>
+                  <div><dt>IP address</dt><dd><a class="ev__id">168.91.245.172</a></dd></div>
+                  <div><dt>API version</dt><dd><a class="ev__id" id="lgVersion"></a><span class="lg__aside">Specified by request</span><i class="ev__glyph ev__glyph--info"></i></dd></div>
+                  <div><dt>Source</dt><dd>Dashboard</dd></div>
+                  <div><dt>User</dt><dd>jenny.rosen@furever.dev</dd></div>
+                  <div><dt>Origin</dt><dd>https://dashboard.stripe.com/</dd></div>
+                  <div><dt>Idempotency key</dt><dd id="lgIdem"></dd></div>
+                  <div><dt>User agent</dt><dd class="lg__wrap"><a class="ev__id">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36</a></dd></div>
+                </dl>
+
+                <h4 class="ev__section">Response body</h4>
+                <div class="ev__code">
+                  <div class="ev__codehead">
+                    <span id="lgBodyLabel">200 OK</span>
+                    <button class="ev__copy" id="lgCopy" aria-label="Copy response body"><i class="ev__glyph ev__glyph--copy"></i></button>
+                  </div>
+                  <pre class="ev__json" id="lgJson"></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Blueprints (from the Blueprints screenshot) — cards rendered from
+               BLUEPRINTS in app.js, so the search can filter them -->
+          <div class="wb__panel wb__panel--events" data-panel="blueprints">
+            <div class="bp__head">
+              <h3 class="bp__title">Blueprints</h3>
+              <p class="bp__sub">Build your integration from preconfigured flows or run quick testing scenarios.</p>
+              <div class="ev__filters bp__filters">
+                <label class="ev__search">
+                  <i class="ev__glyph ev__glyph--search"></i>
+                  <input type="text" id="bpSearch" placeholder="Search for a blueprint..." autocomplete="off" spellcheck="false" />
+                </label>
+                <button class="ev__pill"><i class="ev__glyph ev__glyph--add"></i>Product</button>
+                <button class="ev__pill"><i class="ev__glyph ev__glyph--add"></i>Type</button>
+              </div>
+            </div>
+            <div class="bp__body" id="bpBody"></div>
+          </div>
+
+          <!-- Shell (from the Shell screenshot). A small working shell: the
+               commands it knows live in SHELL_COMMANDS in app.js. -->
+          <div class="wb__panel wb__panel--shell" data-panel="shell">
+            <div class="sh__term" id="shTerm">
+              <div class="sh__tools">
+                <button class="sh__tool" aria-label="Split view"><img src="assets/icons/wb-guide.svg" alt="" /></button>
+                <button class="sh__tool is-on" id="shExplorerToggle" aria-label="API Explorer" aria-pressed="true"><i class="ev__glyph ev__glyph--explorer"></i></button>
+              </div>
+              <div class="sh__scroll" id="shScroll">
+                <div class="sh__welcome" id="shWelcome">
+                  <button class="sh__dismiss" id="shDismiss" aria-label="Dismiss welcome"><i class="ev__glyph ev__glyph--remove"></i></button>
+<pre class="sh__art" aria-label="Stripe">                                   /////
+           ////
+   /////////  ////////  /////// /////  ////////////     ////////
+  ////////// ////////  /////// ///// ////////////   ////// /////
+  //////      ////     ////    ///// ////    ///// /////    ////
+   /////////  ////     ////    ///// ////     //// //////////////
+       ///// ////     ////    ///// ////    /////  ////
+  ////////// ///////  ////    ///// ////////////   ///////////
+   ////////    ////// ////    ///// //// //////      ///////
+                                    ////
+                                    ////</pre>
+                  <p>Welcome to Stripe Shell!</p>
+                  <p>Stripe Shell is a browser-based shell with the Stripe CLI pre-installed. You can use it to manage your Stripe resources in sandboxes or test mode:</p>
+                  <p>- View supported Stripe commands: <button class="sh__cmd" data-cmd="stripe help">stripe help ▷</button></p>
+                  <p>- Find webhook events: <button class="sh__cmd" data-cmd="stripe trigger [event]">stripe trigger [event] ▷</button></p>
+                  <p>- Listen for webhook events: <button class="sh__cmd" data-cmd="stripe listen">stripe listen ▷</button></p>
+                  <p>- Call Stripe APIs: stripe [api resource] [operation] (for example, <button class="sh__cmd" data-cmd="stripe customers list">stripe customers list ▷</button>)</p>
+                </div>
+                <div class="sh__out" id="shOut"></div>
+                <label class="sh__prompt">
+                  <span>furever/furever-sandbox $&nbsp;</span>
+                  <input type="text" id="shInput" autocomplete="off" spellcheck="false" aria-label="Shell command" />
+                </label>
+              </div>
+            </div>
+
+            <aside class="sh__explorer" id="shExplorer">
+              <h3 class="sh__xtitle">API Explorer</h3>
+              <div class="sh__xfields">
+                <label class="sh__field">
+                  <span>Resource</span>
+                  <span class="sh__select">
+                    <select id="shResource">
+                      <option value="">Select a resource</option>
+                      <option value="customers">Customers</option>
+                      <option value="payment_intents">Payment Intents</option>
+                      <option value="charges">Charges</option>
+                      <option value="accounts">Accounts</option>
+                      <option value="transfers">Transfers</option>
+                    </select>
+                    <i class="ev__updown"><i></i><i></i></i>
+                  </span>
+                </label>
+                <label class="sh__field">
+                  <span>Method</span>
+                  <span class="sh__select">
+                    <select id="shMethod" disabled>
+                      <option value="">Select a method</option>
+                      <option value="list">List</option>
+                      <option value="retrieve">Retrieve</option>
+                    </select>
+                    <i class="ev__updown"><i></i><i></i></i>
+                  </span>
+                </label>
+              </div>
+              <div class="sh__xfoot">
+                <button class="lg__textbtn" id="shClear">Clear</button>
+                <button class="sh__btn" id="shShowCode"><i class="ev__glyph ev__glyph--code"></i>Show code</button>
+                <button class="sh__btn sh__btn--primary" id="shRun" disabled>▷ Run request</button>
+              </div>
+            </aside>
+          </div>
+        </div>
+
+        <!-- The shell prompt, docked under every tab but Shell itself (which
+             has its own). Enter runs the command over in the Shell tab. -->
+        <div class="wb__promptrow">
+          <label class="wb__shell">
+            <span class="wb__prompt">furever/furever-sandbox $&nbsp;</span>
+            <input type="text" id="wbPrompt" placeholder="Enter a shell command..." autocomplete="off" spellcheck="false" aria-label="Shell command" />
+          </label>
+          <div class="wb__promptutils">
+            <button class="wb__icon" id="wbPromptUp" aria-label="Open Shell"><i class="tb__glyph tb__glyph--up"></i></button>
+            <button class="wb__icon" id="wbPromptExpand" aria-label="Expand Shell"><img src="assets/icons/wb-arrows-outward.svg" alt="" /></button>
+          </div>
+        </div>
+      </section>
 
       <!-- ───────── Business model modal ───────── -->
       <div class="modal" id="modelModal" role="dialog" aria-modal="true" aria-labelledby="modelTitle">
@@ -794,7 +1128,7 @@
               <dl class="floatcard__stats">
                 <div><dt>Payments</dt><dd>Enabled</dd></div>
                 <div><dt>Payouts</dt><dd>Enabled</dd></div>
-                <div><dt>Balance</dt><dd>$3,044.00</dd></div>
+                <div><dt>Balance</dt><dd>$0.00</dd></div>
               </dl>
             </div>
           </div>
@@ -834,9 +1168,9 @@
               </span>
               <p class="receipt__total">$10.00</p>
               <dl class="receipt__lines">
-                <div><dt>Platform fee</dt><dd>$2.00</dd></div>
+                <div><dt>Platform fee</dt><dd>$1.00</dd></div>
                 <div><dt>Stripe processing fee</dt><dd>$1.82</dd></div>
-                <div><dt>Connected account receives</dt><dd>$8.18</dd></div>
+                <div><dt>Connected account receives</dt><dd>$7.18</dd></div>
               </dl>
             </div>
           </div>
@@ -972,6 +1306,9 @@
           <div class="preview" id="preview">
             <img class="preview__paper" src="assets/preview-card.png" alt="" />
             <i class="preview__grain"></i>
+            <!-- The glare off the card's surface. Only there once the card is
+                 floating, and driven from script with the tilt. -->
+            <i class="preview__sheen"></i>
             <div class="preview__head">
               <div class="preview__logo" id="previewLogo"></div>
               <p class="preview__name" id="previewName">Business name</p>

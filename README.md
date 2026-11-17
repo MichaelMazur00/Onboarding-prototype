@@ -2,7 +2,7 @@
 
 A **working prototype** of the Stripe sandbox onboarding flow — a clickable, browser-native build of the Figma designs, not a static mockup or a set of exported images.
 
-Every screen is real HTML and CSS, every transition is real motion, and the flow holds state: fill in the onboarding form and the card preview fills in with you; create a test account and the empty state becomes a populated table; create a test charge and the account's money-movement panel and API log rewrite themselves in place. The Setup guide tracks progress across all six tasks no matter what order you drive them in.
+Every screen is real HTML and CSS, every transition is real motion, and the flow holds state: fill in the onboarding form and the card preview fills in with you; create a test account and the empty state becomes a populated table; create a test charge and the account's money-movement panel and API log rewrite themselves in place. The Setup guide tracks progress across all seven tasks no matter what order you drive them in.
 
 It is a prototype in the honest sense — it is a front end only. There is no backend, no persistence, and no real Stripe integration; data is fixed and resets on reload. What it is built to do is let you *drive* the flow end to end and feel the interaction design, at a fidelity screenshots can't carry.
 
@@ -39,6 +39,7 @@ Built from Figma → **Portfolio-presentation-scratch**
 | Onboarding, card in colour | `295:53835` |
 | Onboarding callout, above the CTA | `295:54774` |
 | Onboarding, step 2 | `295:51892` |
+| Workbench sheet, open | `21:51243` / `21:51315` |
 
 All icons, the Stripe card vector, and the colour wash are the **exported Figma assets** in `assets/` — nothing is hand-drawn. Colours and type in `styles.css` map 1:1 to the design tokens returned with the design context (`Text/Default #353A44`, `Background/Action Primary #675DFF`, `SF Pro Display` / `SF Pro Text`, etc.).
 
@@ -72,7 +73,14 @@ Motion lives in the interaction:
 | Back to home | Browser back, or **Home** in the nav |
 | Collapse / expand the Setup guide | The diagonal-arrows icon in its header |
 | Open a Setup guide group | Click its header — the open one closes |
-| Finish the Connect track | **View your integration guide** — opens the Stripe docs in a new tab |
+| View the integration guide | **View your integration guide** — opens the Stripe docs in a new tab |
+| Finish the Connect track | **Invite your developers** — Workbench rises from behind the Developers bar |
+| Open / close Workbench | Click **Developers** or the ringed chevron in the bottom bar; the chevron or ✕ in the sheet, or `Esc` |
+| Webhooks | **Webhooks** tab — *Test with a local listener* runs `stripe listen` in the Shell tab; the doc links open Stripe's webhook docs |
+| Browse events | **Events** tab in Workbench — pick an event to read its payload; search filters by ID or type; the chevrons fold the JSON |
+| Browse API logs | **Logs** tab — pick a request to see its details and response body; search filters by resource ID |
+| Use the shell | **Shell** tab, or type into the prompt docked under the other tabs — try `stripe help`, `stripe customers list`, `stripe listen`, `clear`; ↑/↓ walk history. The API Explorer runs a resource + method through the shell |
+| Browse blueprints | **Blueprints** tab — search filters the cards by name, description or product |
 | Identity verification | **Verify your identity** under *Verify your business* — opens over any page |
 | Reopen the onboarding dialog | Click **Verify your business** in the banner |
 | Close the modal | `Esc`, or click the backdrop |

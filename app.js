@@ -195,6 +195,7 @@
     openLayer(dialog, () => {
       document.body.classList.add('is-onboarding');
       dialog.classList.remove('is-step2');
+      resumeFloat();
       setTimeout(() => nameIn.focus(), ms(340));
     });
 
@@ -203,6 +204,7 @@
   $('#taskTestAccount').addEventListener('click', () => go('#connected'));
   $('#taskTestCharge').addEventListener('click', () => go('#account'));
   $('#taskIntegrationGuide').addEventListener('click', completeIntegrationGuide);
+  $('#taskInviteDevelopers').addEventListener('click', inviteDevelopers);
 
   // The account row and the back arrow walk into and out of the detail page
   $('#accountRow').addEventListener('click', () => go('#account'));
@@ -211,7 +213,8 @@
   // Collapsed guide: the next-up label routes to that task's page.
   const guideNext = $('#guideNext');
   guideNext.addEventListener('click', () => {
-    if (guideNext.dataset.route) go(guideNext.dataset.route);
+    if (guideNext.dataset.action === 'workbench') inviteDevelopers();
+    else if (guideNext.dataset.route) go(guideNext.dataset.route);
   });
   // The banner's button says "Verify your business", so it goes where the
   // guide's step of that name goes. Referenced lazily — the modal is declared
@@ -364,12 +367,152 @@
     preview.classList.toggle('is-filled', !!name);
   }
 
-  // Colour lands once the website is committed — on blur, not on keystroke.
-  function colorPreview() {
-    if (!siteIn.value.trim()) return;
-    preview.classList.add('is-color');
+  // The printed card lands when there is nothing left to type onto it: either
+  // the website is committed, or the user moves on without one. `mono` is that
+  // second case — everything prints except the brand colour, which there is no
+  // website to take it from, so the tile stays grey and the initials carry it.
+  function printCard(mono) {
+    preview.classList.toggle('is-mono', mono);
+    if (!preview.classList.contains('is-color')) {
+      preview.classList.add('is-color');
+      startFloat(true);
+    }
     syncPreview();
   }
+
+  // Colour lands once the website is committed — on blur, not on keystroke.
+  function colorPreview() {
+    if (siteIn.value.trim()) printCard(false);
+  }
+
+  /* ── The card comes off the page ─────────
+
+     Up to here the preview is a panel: it fills in a field at a time and it
+     stays put. Once there is nothing left to fill in it stops being the form's
+     output and becomes an object — held off the pane, turning under the
+     cursor, never quite still.
+
+     A spring rather than a transition. A transition re-aims on every pointer
+     event and lands dead each time; a spring carries its velocity across them,
+     so a fast sweep throws the card past the cursor and it settles back. That
+     carried velocity is the whole difference between a tilt effect and
+     something with weight.
+  */
+
+  const MAX_TILT = 9;      // degrees at full deflection
+  const REACH    = 420;    // px from the card's centre that reads as full tilt
+  const FADE     = 520;    // px beyond that over which the pointer hands back
+  const K = 150, C = 17;   // ζ ≈ 0.7 — one soft overshoot, then still
+  const HOVER    = 26;     // px toward the viewer once it is floating
+
+  // One spring per axis. `v` survives between frames, which is what lets a
+  // flick overshoot instead of stopping dead where the pointer stopped.
+  const axes = { rx: { x: 0, v: 0 }, ry: { x: 0, v: 0 }, z: { x: 0, v: 0 } };
+  let aimRX = 0, aimRY = 0, pull = 0;
+  let floating = false, clock = 0, last = 0;
+  let home = { x: 0, y: 0 };
+
+  const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
+
+  // The card is centred in a pane that never moves, so the pane's centre is the
+  // card's home. Measuring the card itself would read back the tilt we just
+  // wrote to it and leave the thing chasing its own tail.
+  function measureHome() {
+    const r = dialogRight.getBoundingClientRect();
+    home = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  }
+
+  function aimAt(px, py) {
+    const dx = (px - home.x) / REACH;
+    const dy = (py - home.y) / REACH;
+    // Full authority within a reach of the centre, handed back over the next
+    // FADE px. A cursor parked across the screen shouldn't hold the card at an
+    // angle it never chose — past that it belongs to the drift again.
+    pull  = clamp(1 - Math.max(0, Math.hypot(dx, dy) - 1) / (FADE / REACH), 0, 1);
+    aimRY =  clamp(dx, -1, 1) * MAX_TILT * pull;
+    aimRX = -clamp(dy, -1, 1) * MAX_TILT * pull;
+  }
+
+  const release = () => { aimRX = 0; aimRY = 0; pull = 0; };
+
+  function integrate(s, target, dt) {
+    s.v += ((target - s.x) * K - s.v * C) * dt;
+    s.x += s.v * dt;
+  }
+
+  function frame(now) {
+    // The card only exists inside the dialog. Once that leaves there is nothing
+    // to drive, so the loop stops rather than burning frames behind a scrim.
+    if (!dialog.classList.contains('is-on')) { floating = false; return; }
+
+    // A backgrounded tab comes back with a huge gap between frames; capping it
+    // keeps the spring from being launched by arithmetic.
+    const dt = Math.min((now - last) / 1000, 1 / 30);
+    last = now;
+    clock += dt;
+
+    integrate(axes.rx, aimRX, dt);
+    integrate(axes.ry, aimRY, dt);
+    integrate(axes.z,  HOVER, dt);
+
+    // At rest it still has to read as held rather than parked. Two sines per
+    // axis on periods that don't divide into each other, so the drift never
+    // visibly repeats. It thins out while the pointer is driving — ambient sway
+    // under a direct input reads as lag, not life.
+    const air = 1 - 0.6 * pull;
+    const t   = clock;
+    const rx  = axes.rx.x + (Math.sin(t * 0.62)           * 0.85 + Math.sin(t * 0.29 + 1.7) * 0.40) * air;
+    const ry  = axes.ry.x + (Math.sin(t * 0.47 + 0.8)     * 1.00 + Math.sin(t * 0.83 + 2.4) * 0.30) * air;
+    const rz  = Math.sin(t * 0.36 + 1.2) * 0.55 * air;
+    const bob = Math.sin(t * 0.53)       * 3.50 * air;
+
+    const s = preview.style;
+    s.setProperty('--float-rx', `${rx.toFixed(3)}deg`);
+    s.setProperty('--float-ry', `${ry.toFixed(3)}deg`);
+    s.setProperty('--float-rz', `${rz.toFixed(3)}deg`);
+    s.setProperty('--float-y',  `${bob.toFixed(2)}px`);
+    s.setProperty('--float-z',  `${axes.z.x.toFixed(2)}px`);
+
+    // Cast by a light above and in front, so a card leaning left throws its
+    // shadow right. Small numbers: against 60px of blur the offset reads as a
+    // direction long before it reads as a distance.
+    s.setProperty('--float-sx', `${(-ry * 0.9).toFixed(2)}px`);
+    s.setProperty('--float-sy', `${( rx * 0.9).toFixed(2)}px`);
+
+    // The sheen is that same fixed light. The card turns, the light doesn't, so
+    // the highlight travels across the surface the other way.
+    s.setProperty('--sheen-x', `${(50 - ry * 3.2).toFixed(2)}%`);
+    s.setProperty('--sheen-y', `${(18 + rx * 3.2).toFixed(2)}%`);
+
+    requestAnimationFrame(frame);
+  }
+
+  // `kick` is the card being let go of rather than found already floating: a
+  // nod off the line that the spring then settles out. Reopening the dialog
+  // picks the drift back up without repeating that moment.
+  function startFloat(kick) {
+    if (floating || reduced) return;
+    floating = true;
+    measureHome();
+    preview.classList.add('is-float');
+    if (kick) axes.rx.v = -16;
+    last = performance.now();
+    requestAnimationFrame(frame);
+  }
+
+  function resumeFloat() {
+    if (preview.classList.contains('is-color')) startFloat(false);
+  }
+
+  window.addEventListener('resize', () => { if (floating) measureHome(); });
+
+  // Tracked on the document rather than the card. What makes it read as free is
+  // that it answers the cursor from across the dialog, before you reach it.
+  document.addEventListener('pointermove', e => {
+    if (floating) aimAt(e.clientX, e.clientY);
+  });
+  document.addEventListener('pointerleave', release);
+  window.addEventListener('blur', release);
 
   // Re-trigger the chip's bump on each keystroke without fighting the transition.
   function bumpChip() {
@@ -384,14 +527,15 @@
 
   /* ── Setup guide progress ──────────────── */
 
-  // Every task in the guide, in order. The first four are the ones the
-  // prototype can actually drive; the last two round out the six the
+  // Every task in the guide, in order. The first five are the ones the
+  // prototype can actually drive; the last two round out the seven the
   // progress bar measures against.
   const TASKS = [
     { el: $('#taskBusinessModel'),   label: 'Choose your business model',  route: '#connect'   },
     { el: $('#taskTestAccount'),     label: 'Create a test account',       route: '#connected' },
     { el: $('#taskTestCharge'),      label: 'Create a test charge',        route: '#account'   },
     { el: $('#taskIntegrationGuide'),label: 'View your integration guide', route: '#account'   },
+    { el: $('#taskInviteDevelopers'),label: 'Invite your developers',      action: 'workbench' },
     { label: 'Verify your identity' },
     { label: 'Verify your business' }
   ];
@@ -424,9 +568,10 @@
     if (next) {
       guideNext.textContent = next.label;
       guideNext.dataset.route = next.route || '';
+      guideNext.dataset.action = next.action || '';
     }
 
-    // Six steps across the track; the resting 10px is the design's floor.
+    // Seven steps across the track; the resting 10px is the design's floor.
     const done = index + 1;
     progress.style.width = `${Math.max(10, Math.round((done / TASKS.length) * TRACK))}px`;
 
@@ -442,8 +587,11 @@
   // Hence aria-disabled, and a click swallowed before it reaches the row's own
   // handler. Capture on the guide gets there first without every handler
   // having to check for itself.
+  // Everything in the guide that is locked, whether a step or a whole group.
+  const LOCKED = '.task.is-locked, .guide__row--locked';
+
   guide.addEventListener('click', e => {
-    if (e.target.closest('.task.is-locked')) {
+    if (e.target.closest(LOCKED)) {
       e.preventDefault();
       e.stopPropagation();
     }
@@ -469,14 +617,17 @@
   // waiting on the same one thing: the step at the front of the queue. They
   // all name it rather than each naming the row above it, because pointing at
   // another locked step would only move the question along.
-  function tipText() {
+  // A trigger may name its own blocker instead — the Go live group is gated on
+  // the verification steps, not on the queue the steps above it share.
+  function tipText(el) {
+    if (el.dataset.tip) return el.dataset.tip;
     const next = TASKS.find(t => t.el && !t.el.classList.contains('is-done'));
     return next ? `${next.label} first` : '';
   }
 
   function showTip(el) {
     if (tipFor === el) return;
-    const text = tipText();
+    const text = tipText(el);
     if (!text) return;
 
     // Warm: one is already up, or one closed a moment ago. The question has
@@ -541,13 +692,13 @@
   // mouseleave behind it, which would strand the tooltip on screen.
   if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
     guide.addEventListener('mouseover', e => {
-      const locked = e.target.closest('.task.is-locked');
+      const locked = e.target.closest(LOCKED);
       locked ? showTip(locked) : hideTip();
     });
     guide.addEventListener('mouseleave', hideTip);
   }
   guide.addEventListener('focusin', e => {
-    const locked = e.target.closest('.task.is-locked');
+    const locked = e.target.closest(LOCKED);
     locked ? showTip(locked) : hideTip();
   });
   guide.addEventListener('focusout', hideTip);
@@ -577,16 +728,587 @@
     fadeIn(guide, 120);
   }
 
-  // The last Connect task sends you to the real docs, then checks itself off
-  // and hands the guide over to the verification group.
+  // The integration guide sends you to the real docs and checks itself off.
+  // The Connect group stays open: inviting your developers is still to come.
   const INTEGRATION_DOCS = 'https://docs.stripe.com/connect/interactive-platform-guide';
 
   function completeIntegrationGuide() {
     window.open(INTEGRATION_DOCS, '_blank', 'noopener,noreferrer');
     completeThrough(3);
-    openGroup(guideGroups[1]);
     fadeIn(guide);
   }
+
+  /* ── Workbench sheet ───────────────────── */
+
+  // The last Connect task drives you into Workbench — where your developers
+  // will live — so it opens the sheet up out of the taskbar. Getting there is
+  // the task: it checks off as the sheet rises, and the guide hands over to
+  // the verification group once the sheet is put away again, so the change is
+  // something you see rather than something that happened behind the sheet.
+  const workbench = $('#workbench');
+  const taskInvite = $('#taskInviteDevelopers');
+  let handOverOnClose = false;
+
+  const wbIsOpen = () => workbench.classList.contains('is-open');
+
+  function openWorkbench() {
+    if (wbIsOpen()) return;
+    hideTip();
+    workbench.classList.add('is-open');
+    workbench.setAttribute('aria-hidden', 'false');
+    syncDock(true);
+  }
+
+  function closeWorkbench() {
+    if (!wbIsOpen()) return;
+    workbench.classList.remove('is-open');
+    workbench.setAttribute('aria-hidden', 'true');
+    syncDock(false);
+    if (handOverOnClose) {
+      handOverOnClose = false;
+      openGroup(guideGroups[1]);
+      fadeIn(guide, 200);
+    }
+  }
+
+  // TESTING: the step is unlocked from the start (see index.html), so it can
+  // be clicked before the four ahead of it are done. Then it only opens the
+  // sheet; it checks off once the steps ahead of it are done, as completing
+  // it would otherwise tick those off too.
+  const priorDone = () => $('#taskIntegrationGuide').classList.contains('is-done');
+
+  function inviteDevelopers() {
+    if (priorDone() && !taskInvite.classList.contains('is-done')) {
+      completeThrough(4);
+      handOverOnClose = true;
+    }
+    openWorkbench();
+  }
+
+  // The Developers bar toggles the sheet; its ringed chevron turns to match.
+  const taskbarOpen   = $('#taskbarOpen');
+  const taskbarToggle = $('#taskbarToggle');
+  function syncDock(open) {
+    document.body.classList.toggle('wb-open', open);
+    taskbarOpen.setAttribute('aria-expanded', String(open));
+    taskbarToggle.setAttribute('aria-label', open ? 'Minimise Workbench' : 'Open Workbench');
+  }
+  const toggleWorkbench = () => (wbIsOpen() ? closeWorkbench() : openWorkbench());
+  // The whole bar is the handle — anywhere on it pulls the sheet up or puts
+  // it away. One listener, so the buttons inside don't toggle it twice.
+  $('#taskbar').addEventListener('click', toggleWorkbench);
+  $('#wbClose').addEventListener('click', closeWorkbench);
+
+  // The link icon is the invite itself: the link goes on the clipboard, and
+  // the icon takes the action colour for a moment to say so.
+  const copyLink = $('#wbCopyLink');
+  let copyTimer = null;
+  copyLink.addEventListener('click', () => {
+    navigator.clipboard?.writeText(location.href.split('#')[0] + '#home').catch(() => {});
+    copyLink.classList.add('is-copied');
+    copyLink.setAttribute('aria-label', 'Link copied');
+    clearTimeout(copyTimer);
+    copyTimer = setTimeout(() => {
+      copyLink.classList.remove('is-copied');
+      copyLink.setAttribute('aria-label', 'Copy link');
+    }, 1600);
+  });
+
+  /* ── Workbench tabs ──────────────────── */
+
+  // Only tabs with a panel behind them switch; the rest stay put, the way
+  // the prototype's other unbuilt controls do.
+  const wbTabs   = $$('.wb__tab', workbench);
+  const wbPanels = $$('.wb__panel', workbench);
+
+  function showWbTab(name) {
+    const panel = wbPanels.find(p => p.dataset.panel === name);
+    if (!panel) return;
+    wbTabs.forEach(t => {
+      const on = t.dataset.tab === name;
+      t.classList.toggle('is-current', on);
+      t.setAttribute('aria-selected', String(on));
+    });
+    wbPanels.forEach(p => p.classList.toggle('is-current', p === panel));
+    // Shell has its own prompt, so the docked one steps aside there
+    workbench.classList.toggle('on-shell', name === 'shell');
+  }
+  wbTabs.forEach(t => t.addEventListener('click', () => showWbTab(t.dataset.tab)));
+
+  /* ── Workbench · shared ────────────────── */
+
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+
+  // JSON, one element per line, with a fold toggle on every object and array.
+  // IDs read in the action colour, the way an event's own ID does.
+  function renderValue(v) {
+    if (v === null) return '<span class="z">null</span>';
+    if (typeof v === 'boolean') return `<span class="b">${v}</span>`;
+    if (typeof v === 'number') return `<span class="n">${v}</span>`;
+    const cls = /^(evt|acct|pi|ch|tr|fee|acctsig)_/.test(v) ? 'i' : 's';
+    return `<span class="${cls}">"${esc(v)}"</span>`;
+  }
+
+  function renderJson(value, depth = 0, key = null, last = true) {
+    const label = key === null ? '' : `<span class="k">"${esc(key)}"</span>: `;
+    const comma = last ? '' : ',';
+    if (value && typeof value === 'object') {
+      const isArr = Array.isArray(value);
+      const [open, close] = isArr ? ['[', ']'] : ['{', '}'];
+      const entries = Object.entries(value);
+      const kids = entries.map(([k, v], i) =>
+        renderJson(v, depth + 1, isArr ? null : k, i === entries.length - 1)).join('');
+      return `<span class="ev__node"><span class="ev__ln" style="--d:${depth}">` +
+        `<button class="ev__tog" aria-label="Collapse"></button>${label}${open}<span class="ev__fold">…${close}${comma}</span></span>` +
+        `<span class="ev__kids">${kids}</span>` +
+        `<span class="ev__ln ev__close" style="--d:${depth}">${close}${comma}</span></span>`;
+    }
+    return `<span class="ev__ln" style="--d:${depth}">${label}${renderValue(value)}${comma}</span>`;
+  }
+
+  // A list + detail pane pair (Events, Logs): selection, folding, search,
+  // refresh and copy all behave the same in both.
+  function listDetail({ list, search, updated, refresh, json, copy, items, selected, renderList, renderDetail, payload }) {
+    const state = { selected };
+    list.addEventListener('click', e => {
+      const row = e.target.closest('.ev__row');
+      if (!row) return;
+      state.selected = items[+row.dataset.i];
+      $$('.ev__row', list).forEach(r => {
+        r.classList.toggle('is-selected', r === row);
+        r.setAttribute('aria-selected', String(r === row));
+      });
+      renderDetail(state.selected);
+    });
+    json.addEventListener('click', e => {
+      const tog = e.target.closest('.ev__tog');
+      if (!tog) return;
+      const folded = tog.closest('.ev__node').classList.toggle('is-folded');
+      tog.setAttribute('aria-label', folded ? 'Expand' : 'Collapse');
+    });
+    search.addEventListener('input', () => renderList(state.selected));
+    // Refresh restamps the header and replays the list's arrival
+    refresh.addEventListener('click', () => {
+      updated.textContent = new Date().toLocaleTimeString('en-US', { timeZone: 'UTC' });
+      list.classList.remove('is-refreshing');
+      void list.offsetWidth;
+      list.classList.add('is-refreshing');
+    });
+    copy.addEventListener('click', () => {
+      navigator.clipboard?.writeText(JSON.stringify(payload(state.selected), null, 2)).catch(() => {});
+      copy.classList.add('is-copied');
+      setTimeout(() => copy.classList.remove('is-copied'), 900);
+    });
+    renderList(state.selected);
+    renderDetail(state.selected);
+  }
+
+  /* ── Workbench · Events ────────────────── */
+
+  // The Furever account's traffic from the test charge, newest first. v2
+  // events carry a thin payload that points at the object; v1 events snapshot
+  // the object itself — which is why the two read differently below.
+  const ACCT = 'acct_1Uct2JIQXbeqTFVg';
+  const EVENTS = [
+    { type: 'v2.core.account[requirements].updated', time: '8:31:49 PM', secs: 1794947509,
+      id: 'evt_test_65VmH02GuxH95yBy5gS16VkQahPXSQKTDo20rEeP6006sq',
+      desc: `The requirements for account with ID ${ACCT} were updated`,
+      related: { id: ACCT, type: 'v2.core.account', url: `/v2/core/accounts/${ACCT}` } },
+    { type: 'v1.application_fee.created', time: '8:31:49 PM', secs: 1794947509,
+      id: 'evt_1Uct2dIQXbeqTFVgk3Hq9Lx2',
+      desc: 'An application fee fee_1Uct2cIQXbeqTFVg67cgTuRP was collected',
+      object: { id: 'fee_1Uct2cIQXbeqTFVg67cgTuRP', object: 'application_fee', account: ACCT,
+                amount: 100, currency: 'usd', charge: 'ch_3Uct2XIQXb8NRkki2NO5zg1B', refunded: false } },
+    { type: 'v1.application_fee.created', time: '8:31:47 PM', secs: 1794947507,
+      id: 'evt_1Uct2bIQXbeqTFVg0pWm7sAq',
+      desc: 'An application fee fee_1Uct2aIQXb3yn4xoP79uFoEW was collected',
+      object: { id: 'fee_1Uct2aIQXb3yn4xoP79uFoEW', object: 'application_fee', account: ACCT,
+                amount: 100, currency: 'usd', charge: 'ch_3Uct2XIQXb8NRkki2NO5zg1B', refunded: false } },
+    { type: 'v1.charge.updated', time: '8:31:45 PM', secs: 1794947505,
+      id: 'evt_3Uct2XIQXb8NRkki2Lz4cQ0d',
+      desc: 'A payment ch_3Uct2XIQXb8NRkki2NO5zg1B was updated',
+      object: { id: 'ch_3Uct2XIQXb8NRkki2NO5zg1B', object: 'charge', amount: 50000, amount_captured: 50000,
+                application_fee_amount: 100, currency: 'usd', paid: true, status: 'succeeded',
+                payment_intent: 'pi_3Uct2XIQXb8NRkki2Q0bXy1L' } },
+    { type: 'v1.transfer.created', time: '8:31:45 PM', secs: 1794947505,
+      id: 'evt_3Uct2XIQXb8NRkki2aT7nV5e',
+      desc: 'A new transfer tr_3Uct2XIQXb8NRkki20VYgMzJ was created',
+      object: { id: 'tr_3Uct2XIQXb8NRkki20VYgMzJ', object: 'transfer', amount: 49818, currency: 'usd',
+                destination: ACCT, reversed: false, source_transaction: 'ch_3Uct2XIQXb8NRkki2NO5zg1B' } },
+    { type: 'v2.signals.account_signal.fraudulent_merchant_ready', time: '8:31:43 PM', secs: 1794947503,
+      id: 'evt_test_65VmH02Fq8sT1nCcd4XS16VkQahPXSQKTDo20rEeP6006sq',
+      related: { id: 'acctsig_test_61TmqW3dEo8nB2kPc41', type: 'v2.signals.account_signal',
+                 url: '/v2/signals/account_signals/acctsig_test_61TmqW3dEo8nB2kPc41' } },
+    { type: 'v2.core.account[configuration.customer].capability_status_updated', time: '8:31:42 PM', secs: 1794947502,
+      id: 'evt_test_65VmH02E2kPq7wYbe1SS16VkQahPXSQKTDo20rEeP6006sq',
+      desc: `The capability status for customer configuration on account with ID ${ACCT} was updated`,
+      related: { id: ACCT, type: 'v2.core.account', url: `/v2/core/accounts/${ACCT}` } },
+    { type: 'v1.payment_intent.succeeded', time: '8:31:41 PM', secs: 1794947501,
+      id: 'evt_3Uct2XIQXb8NRkki2t0Rk6Wn',
+      desc: 'A payment pi_3Uct2XIQXb8NRkki2Q0bXy1L for $500.00 has succeeded',
+      object: { id: 'pi_3Uct2XIQXb8NRkki2Q0bXy1L', object: 'payment_intent', amount: 50000,
+                amount_received: 50000, application_fee_amount: 100, currency: 'usd',
+                latest_charge: 'ch_3Uct2XIQXb8NRkki2NO5zg1B', status: 'succeeded' } },
+    { type: 'v1.payment_intent.created', time: '8:31:40 PM', secs: 1794947500,
+      id: 'evt_3Uct2XIQXb8NRkki2m8Hd3Ys',
+      desc: 'A new payment pi_3Uct2XIQXb8NRkki2Q0bXy1L for $500.00 was created',
+      object: { id: 'pi_3Uct2XIQXb8NRkki2Q0bXy1L', object: 'payment_intent', amount: 50000,
+                amount_received: 0, application_fee_amount: 100, currency: 'usd',
+                status: 'requires_payment_method' } },
+    { type: 'v1.account.updated', time: '8:31:38 PM', secs: 1794947498,
+      id: 'evt_1Uct2QIQXbeqTFVgwZ2pYc8r',
+      desc: `The account ${ACCT} was updated`,
+      object: { id: ACCT, object: 'account', business_profile: { name: 'Furever', url: 'furever.dev' },
+                charges_enabled: true, payouts_enabled: true, country: 'US' } },
+    { type: 'v2.core.account.created', time: '8:31:36 PM', secs: 1794947496,
+      id: 'evt_test_65VmH02B7rNx3vQaf9KS16VkQahPXSQKTDo20rEeP6006sq',
+      desc: `The account ${ACCT} was created`,
+      related: { id: ACCT, type: 'v2.core.account', url: `/v2/core/accounts/${ACCT}` } }
+  ];
+
+  // The payload each event would have been delivered with. v2 types keep
+  // their version; v1 types are delivered without it.
+  function eventPayload(ev) {
+    const iso = new Date(ev.secs * 1000).toISOString().replace(/\.\d+Z$/, '.445Z');
+    if (ev.related) {
+      return { created: iso, id: ev.id, object: 'v2.core.event', type: ev.type,
+               livemode: false, reason: null, related_object: ev.related };
+    }
+    return { id: ev.id, object: 'event', api_version: '2025-10-29.clover', created: ev.secs,
+             data: { object: ev.object }, livemode: false, pending_webhooks: 1,
+             type: ev.type.slice(3) };
+  }
+
+  const evList   = $('#evList');
+  const evSearch = $('#evSearch');
+  const typeHtml = t => t.startsWith('v1.') ? `<em>v1.</em>${esc(t.slice(3))}` : esc(t);
+
+  listDetail({
+    list: evList, search: evSearch, updated: $('#evUpdated'), refresh: $('#evRefresh'),
+    json: $('#evJson'), copy: $('#evCopy'), items: EVENTS, selected: EVENTS[0], payload: eventPayload,
+    renderList(selected) {
+      const q = evSearch.value.trim().toLowerCase();
+      const shown = EVENTS.filter(e => !q || e.id.toLowerCase().includes(q) || e.type.toLowerCase().includes(q));
+      evList.innerHTML = shown.map(e => `
+        <button class="ev__row${e === selected ? ' is-selected' : ''}" role="option"
+                aria-selected="${e === selected}" data-i="${EVENTS.indexOf(e)}">
+          <span class="ev__rowtext">
+            <span class="ev__type">${typeHtml(e.type)}</span>
+            ${e.desc ? `<span class="ev__rowdesc">${esc(e.desc)}</span>` : ''}
+          </span>
+          <span class="ev__time">${e.time}</span>
+        </button>`).join('');
+      evList.parentElement.classList.toggle('is-empty', !shown.length);
+    },
+    renderDetail(e) {
+      $('#evTitle').textContent = e.type;
+      $('#evDesc').textContent = e.desc || '';
+      $('#evId').textContent = e.id;
+      $('#evDate').textContent = `Nov 17, 2026, ${e.time} UTC`;
+      $('#evJson').innerHTML = renderJson(eventPayload(e));
+      $('#evDetail').scrollTop = 0;
+    }
+  });
+
+  /* ── Workbench · Logs ──────────────────── */
+
+  // The API calls behind the test account and charge, newest first. The
+  // HTTP method filter in the bar reads "POST, DELETE", so that's all there is.
+  const PI = { id: 'pi_3Uct2XIQXb8NRkki2Q0bXy1L', object: 'payment_intent', amount: 50000,
+               amount_received: 0, application_fee_amount: 100, currency: 'usd',
+               customer: 'cus_L82G0DAIEgLtBf', livemode: false, status: 'requires_confirmation',
+               transfer_data: { destination: ACCT } };
+  const v2Account = (id, extra = {}) => ({ id, object: 'v2.core.account', applied_configurations: ['customer', 'merchant'],
+               contact_email: 'testaccount@example.com', display_name: 'Furever', livemode: false, ...extra });
+
+  const REQUESTS = [
+    { method: 'POST', path: '/v1/payment_intents', time: '8:31:42 PM', req: 'req_xWPtR4xwg7wA4z',
+      version: '2025-10-29.clover', idem: 'b0b9336a-0e9e-494b-9d0b-8cd146077af9', body: PI },
+    { method: 'POST', path: `/v2/core/accounts/${ACCT}`, time: '8:31:33 PM', req: 'req_v2Lm8QeT3nWd5K',
+      version: '2026-10-28.endive', idem: '4e1f0c27-9a7b-4f61-b2d5-31c0e8a5f9d2',
+      body: v2Account(ACCT, { configuration: { customer: { capabilities: { automatic_indirect_tax: { status: 'active' } } } } }) },
+    { method: 'POST', path: '/v2/core/accounts/acct_1Uct2JIQXb3yn4xo', time: '8:31:33 PM', req: 'req_v2Hc4RbN7pXs2A',
+      version: '2026-10-28.endive', idem: '9c6a2d18-5e3b-4c0a-8f27-6d1b4e9a03c5',
+      body: v2Account('acct_1Uct2JIQXb3yn4xo') },
+    { method: 'POST', path: '/v2/core/accounts', time: '8:31:27 PM', req: 'req_v2Qa9ZtY1kFm6E',
+      version: '2026-10-28.endive', idem: '1d7e5b93-2c4f-4a86-9b0e-7f3a6c2d8e41',
+      body: v2Account(ACCT) },
+    { method: 'POST', path: '/v2/core/accounts', time: '8:31:27 PM', req: 'req_v2Wd3JsK8rGh0U',
+      version: '2026-10-28.endive', idem: '6b2c8f40-1a9d-4e37-a5c6-0d4f7b9e2a18',
+      body: v2Account('acct_1Uct2JIQXb3yn4xo') },
+    { method: 'DELETE', path: '/v1/webhook_endpoints/we_1Uct1zIQXb8NRkkiP3aT9sLm', time: '8:30:58 PM', req: 'req_Tq7bN2cXv5mR8p',
+      version: '2025-10-29.clover', idem: '—',
+      body: { id: 'we_1Uct1zIQXb8NRkkiP3aT9sLm', object: 'webhook_endpoint', deleted: true } }
+  ];
+
+  const lgList   = $('#lgList');
+  const lgSearch = $('#lgSearch');
+  const methodHtml = m => `<span class="lg__method lg__method--${m.toLowerCase()}">${m}</span>`;
+
+  listDetail({
+    list: lgList, search: lgSearch, updated: $('#lgUpdated'), refresh: $('#lgRefresh'),
+    json: $('#lgJson'), copy: $('#lgCopy'), items: REQUESTS, selected: REQUESTS[0], payload: r => r.body,
+    renderList(selected) {
+      const q = lgSearch.value.trim().toLowerCase();
+      const shown = REQUESTS.filter(r => !q || r.path.toLowerCase().includes(q) || r.req.toLowerCase().includes(q));
+      lgList.innerHTML = shown.map(r => `
+        <button class="ev__row lg__row${r === selected ? ' is-selected' : ''}" role="option"
+                aria-selected="${r === selected}" data-i="${REQUESTS.indexOf(r)}">
+          <span class="lg__code"><i class="ev__glyph ev__glyph--check"></i>200</span>
+          ${methodHtml(r.method)}
+          <span class="ev__rowtext"><span class="ev__type">${esc(r.path)}</span></span>
+          <span class="ev__time">${r.time}</span>
+        </button>`).join('');
+      lgList.parentElement.classList.toggle('is-empty', !shown.length);
+    },
+    renderDetail(r) {
+      $('#lgTitle').innerHTML = `${methodHtml(r.method)}${esc(r.path)}`;
+      $('#lgStatus').textContent = '200';
+      $('#lgReq').textContent = r.req;
+      $('#lgTime').textContent = `Nov 17, 2026, ${r.time} UTC`;
+      $('#lgVersion').textContent = r.version;
+      $('#lgIdem').textContent = r.idem === '—' ? '—' : `Key — ${r.idem}`;
+      $('#lgJson').innerHTML = renderJson(r.body);
+      $('#lgDetail').scrollTop = 0;
+    }
+  });
+
+  /* ── Workbench · Blueprints ────────────── */
+
+  // [title, description, steps, API calls, products]. From the Blueprints
+  // screenshots; `backticks` in a title set that part in code type. The last
+  // three testing scenarios were cut off below their titles, so their
+  // descriptions and counts are filled in, not taken from the screenshots.
+  const BLUEPRINTS = [
+    { section: 'Full integrations',
+      sub: 'Step through a full integration with the code samples you need to quickly get started.',
+      cards: [
+        ['Accept a one-time payment with Checkout', 'Learn how to accept a one-time payment using Stripe Checkout.', 3, 2, 'Payments'],
+        ['Accept a payment with PaymentElement', 'Learn how to accept a one-time payment by embedding the PaymentElement into your own UI.', 1, 1, 'Payments'],
+        ['Accept in-person payments on a physical reader', 'Learn how to accept in-person payments by testing a server-driven integration with a physical reader.', 2, 4, 'Terminal'],
+        ['B2B Payments with Issuing', 'Create virtual cards for your business to make purchases using your v2 Financial Account.', 4, 7, 'Issuing, Treasury'],
+        ['Collect payments using Accounts v2 as a marketplace', 'Collect payments then pay out on your marketplace.', 2, 4, 'Connect, Checkout'],
+        ['Embedded Finance with Issuing', 'Build an embedded financial services integration with Issuing and Treasury for platforms.', 6, 12, 'Issuing, Treasury, Connect'],
+        ['Embedded Finance with Issuing (V2 Financial Accounts)', 'Build an embedded financial services integration with Issuing and V2 Financial Accounts, using V2 money movement APIs for funding.', 6, 12, 'Issuing, Treasury, Connect'],
+        ['Embedded payments and subscriptions using Accounts v2', 'Build an integration with embedded payments and subscriptions on Accounts v2.', 3, 8, 'Billing, Connect'],
+        ['Flat rate subscription with entitlements', 'Learn how to create a flat rate subscription with entitlements to manage customer feature access.', 5, 9, 'Billing, Checkout'],
+        ['Invoice payment with hosted page', 'Learn how to create and collect payment on an invoice using a hosted payment page.', 3, 6, 'Billing'],
+        ['Metered subscription with entitlements', 'Learn how to create a usage-based subscription with metering and entitlements to manage customer feature access.', 5, 12, 'Billing, Checkout'],
+        ['Model hybrid pricing with pricing plans', 'Charge your customers based on usage, recurring, or one-time fees.', 6, 14, 'Billing'],
+        ['Set up future payments', 'Save payment details in a Checkout Session and charge your customers later.', 3, 4, 'Payments']
+      ] },
+    { section: 'Testing scenarios',
+      sub: 'Learn how to create key resources for your Stripe integration.',
+      cards: [
+        ['Create a destination charge', 'Creates a charge on your platform account where your platform serves as the settlement merchant. Collects fees and immediately transfers the remaining funds to the connected account.', 1, 1, 'Connect'],
+        ['Create a destination `on_behalf_of` charge', 'Creates a charge on your platform account where a connected account serves as the settlement merchant. Collects fees and immediately transfers the remaining funds to the connected account.', 1, 1, 'Connect'],
+        ['Create a direct charge', 'Creates a charge directly on a connected account and transfers a collected fee to the platform.', 1, 1, 'Connect'],
+        ['Create a v2 account', 'Creates a connected account using the v2 API. Choose between a restricted account and an account that is fully onboarded and verified.', 1, 2, 'Connect'],
+        ['Create an account', 'Creates a connected account. Choose between a restricted account and an account that is fully onboarded and verified, enabling either your platform or Stripe to collect requirements.', 1, 1, 'Connect'],
+        ['Resolve a health alert', 'Resolves a health alert.', 1, 1, 'Health alerts'],
+        ['Test in-person payments on a simulated reader', 'Collect a payment on a simulated reader without needing physical hardware.', 2, 3, 'Terminal'],
+        ['Trigger a health alert', 'Triggers a health alert so you can see how your integration is notified.', 1, 1, 'Health alerts'],
+        ['Trigger Agentic Purchase', 'Simulates a purchase made by an AI agent on behalf of a customer.', 1, 2, 'Payments']
+      ] }
+  ];
+
+  const bpBody   = $('#bpBody');
+  const bpSearch = $('#bpSearch');
+  const plural   = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+
+  function renderBlueprints() {
+    const q = bpSearch.value.trim().toLowerCase();
+    const html = BLUEPRINTS.map(({ section, sub, cards }) => {
+      const shown = cards.filter(c => !q || `${c[0].replace(/`/g, '')} ${c[1]} ${c[4]}`.toLowerCase().includes(q));
+      if (!shown.length) return '';
+      return `<section class="bp__section">
+        <h4 class="bp__stitle">${section}</h4>
+        <p class="bp__ssub">${sub}</p>
+        <div class="bp__grid">${shown.map(([title, desc, steps, calls, products]) => `
+          <button class="bp__card">
+            <span class="bp__ctitle">${esc(title).replace(/`([^`]+)`/g, '<code>$1</code>')}</span>
+            <span class="bp__cdesc">${esc(desc)}</span>
+            <span class="bp__meta">${plural(steps, 'step')} · ${plural(calls, 'API call')} · ${esc(products)}</span>
+          </button>`).join('')}
+        </div>
+      </section>`;
+    }).join('');
+    bpBody.innerHTML = html || '<p class="bp__none">No blueprints match your search.</p>';
+  }
+  bpSearch.addEventListener('input', renderBlueprints);
+  renderBlueprints();
+
+  /* ── Workbench · Shell ─────────────────── */
+
+  // Not a real CLI — a handful of commands that answer the way the Stripe CLI
+  // would, with the sandbox's own objects, so the welcome's links all land.
+  const shOut     = $('#shOut');
+  const shInput   = $('#shInput');
+  const shScroll  = $('#shScroll');
+  const shHistory = [];
+  let shAt = 0;
+
+  // What `stripe <resource> list|retrieve` returns
+  const SHELL_OBJECTS = {
+    customers:       { id: 'cus_L82G0DAIEgLtBf', object: 'customer', email: 'stacy.wilson@gmail.com', name: 'Stacy Wilson', balance: 0, currency: 'usd', delinquent: false },
+    payment_intents: { ...PI, amount_received: 50000, status: 'succeeded' },
+    charges:         { id: 'ch_3Uct2XIQXb8NRkki2NO5zg1B', object: 'charge', amount: 50000, application_fee_amount: 100, currency: 'usd', paid: true, status: 'succeeded' },
+    accounts:        { id: ACCT, object: 'account', business_profile: { name: 'Furever', url: 'furever.dev' }, charges_enabled: true, payouts_enabled: true, country: 'US' },
+    transfers:       { id: 'tr_3Uct2XIQXb8NRkki20VYgMzJ', object: 'transfer', amount: 49818, currency: 'usd', destination: ACCT, reversed: false }
+  };
+
+  const line = (text, cls = '') => `<p class="${cls}">${esc(text)}</p>`;
+
+  const SHELL_COMMANDS = {
+    help: () => [
+      line('Usage:'),
+      line('  stripe [command]'),
+      line(''),
+      line('Commands:'),
+      line('  customers, payment_intents, charges, accounts, transfers   list | retrieve'),
+      line('  listen     Listen for webhook events'),
+      line('  trigger    Trigger test webhook events'),
+      line('  clear      Clear the screen'),
+      line(''),
+      line('Use "stripe [command] --help" for more information about a command.', 'is-dim')
+    ].join(''),
+    listen: () => [
+      line('> Ready! You are using Stripe API Version [2025-10-29.clover]. Your webhook signing secret is whsec_8f2c41a9d7e3b6f05c1a2e9d (^C to quit)', 'is-ok'),
+      line('2026-11-17 20:32:51   --> payment_intent.succeeded [evt_3Uct2XIQXb8NRkki2t0Rk6Wn]', 'is-dim'),
+      line('2026-11-17 20:32:51   --> charge.updated [evt_3Uct2XIQXb8NRkki2Lz4cQ0d]', 'is-dim')
+    ].join(''),
+    trigger: arg => {
+      if (!arg || arg === '[event]') {
+        return line('Supported events:') +
+          ['payment_intent.succeeded', 'payment_intent.created', 'charge.updated', 'account.updated', 'transfer.created']
+            .map(e => line('  ' + e)).join('');
+      }
+      return line(`Setting up fixture for: ${arg.split('.')[0]}`) +
+             line(`Running fixture for: ${arg.split('.')[0]}`) +
+             line('Trigger succeeded! Check dashboard for event details.', 'is-ok');
+    }
+  };
+
+  function runShell(raw) {
+    const cmd = raw.trim();
+    if (!cmd) return;
+    shHistory.push(cmd);
+    shAt = shHistory.length;
+
+    if (cmd === 'clear') {
+      shOut.innerHTML = '';
+      $('#shWelcome').classList.add('is-gone');
+      return;
+    }
+
+    const [bin, sub, arg] = cmd.split(/\s+/);
+    let html;
+    if (bin !== 'stripe') {
+      html = line(`zsh: command not found: ${bin}`, 'is-err');
+    } else if (!sub || sub === 'help' || sub === '--help') {
+      html = SHELL_COMMANDS.help();
+    } else if (SHELL_COMMANDS[sub]) {
+      html = SHELL_COMMANDS[sub](arg);
+    } else if (SHELL_OBJECTS[sub] && (arg === 'list' || arg === 'retrieve')) {
+      const obj = SHELL_OBJECTS[sub];
+      const body = arg === 'list'
+        ? { object: 'list', data: [obj], has_more: false, url: `/v1/${sub}` }
+        : obj;
+      html = `<pre class="ev__json">${renderJson(body)}</pre>`;
+    } else if (SHELL_OBJECTS[sub]) {
+      html = line(`Available operations for ${sub}: list, retrieve`, 'is-dim');
+    } else {
+      html = line(`unknown command "${sub}" for "stripe"`, 'is-err') +
+             line(`Run 'stripe --help' for usage.`, 'is-dim');
+    }
+
+    shOut.insertAdjacentHTML('beforeend',
+      `<div class="sh__entry">${line(`furever/furever-sandbox $ ${cmd}`, 'is-cmd')}${html}</div>`);
+    shScroll.scrollTop = shScroll.scrollHeight;
+  }
+
+  shInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      runShell(shInput.value);
+      shInput.value = '';
+    } else if (e.key === 'ArrowUp' && shAt > 0) {
+      e.preventDefault();
+      shInput.value = shHistory[--shAt];
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      shAt = Math.min(shHistory.length, shAt + 1);
+      shInput.value = shHistory[shAt] || '';
+    }
+  });
+
+  // The welcome's ▷ links run their command as if typed
+  $('#shWelcome').addEventListener('click', e => {
+    const c = e.target.closest('.sh__cmd');
+    if (c) { runShell(c.dataset.cmd); shInput.focus(); }
+  });
+  $('#shDismiss').addEventListener('click', () => $('#shWelcome').classList.add('is-gone'));
+
+  // A click anywhere in the terminal's empty space lands in the prompt —
+  // unless it's a text selection, which the click would otherwise lose.
+  $('#shTerm').addEventListener('click', e => {
+    if (e.target.closest('button, .sh__explorer') || String(getSelection())) return;
+    shInput.focus();
+  });
+
+  // The docked prompt under the other tabs: Enter carries the command over
+  // to the Shell tab and runs it there; the chevron and expand just go there.
+  const wbPrompt  = $('#wbPrompt');
+  const openShell = () => { showWbTab('shell'); shInput.focus(); };
+  wbPrompt.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const cmd = wbPrompt.value;
+    wbPrompt.value = '';
+    openShell();
+    runShell(cmd);
+  });
+  $('#wbPromptUp').addEventListener('click', openShell);
+
+  // Webhooks' local-listener link starts `stripe listen` over in the Shell
+  $('#whListen').addEventListener('click', () => { openShell(); runShell('stripe listen'); });
+  $('#wbPromptExpand').addEventListener('click', openShell);
+
+  /* API Explorer: pick a resource and a method, and Run sends it through the
+     shell, so its answer reads like everything else typed there. */
+  const shPanel    = $('[data-panel="shell"]');
+  const shResource = $('#shResource');
+  const shMethod   = $('#shMethod');
+  const shRun      = $('#shRun');
+  const shCommand  = () => `stripe ${shResource.value} ${shMethod.value}`;
+
+  function syncExplorer() {
+    shMethod.disabled = !shResource.value;
+    if (!shResource.value) shMethod.value = '';
+    shRun.disabled = !(shResource.value && shMethod.value);
+  }
+  shResource.addEventListener('change', syncExplorer);
+  shMethod.addEventListener('change', syncExplorer);
+  shRun.addEventListener('click', () => runShell(shCommand()));
+  $('#shShowCode').addEventListener('click', () => {
+    if (!shRun.disabled) { shInput.value = shCommand(); shInput.focus(); }
+  });
+  $('#shClear').addEventListener('click', () => {
+    shResource.value = '';
+    syncExplorer();
+  });
+
+  const shExplorerToggle = $('#shExplorerToggle');
+  shExplorerToggle.addEventListener('click', () => {
+    const hidden = shPanel.classList.toggle('no-explorer');
+    shExplorerToggle.classList.toggle('is-on', !hidden);
+    shExplorerToggle.setAttribute('aria-pressed', String(!hidden));
+  });
+
+  // Esc puts the sheet away — unless a modal is up, which Esc closes first.
+  // Capture phase, so this reads `current` before the modal's own Esc handler
+  // has cleared it; otherwise one press would close both.
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !current) closeWorkbench();
+  }, true);
 
   /* ── API log ───────────────────────────── */
 
@@ -631,10 +1353,10 @@
     document.body.classList.add('model-saved', 'account-created', 'charge-created');
 
     // A fresh account has no history, so its row sits at zero until this
-    // charge lands. Balance is the charge less the $1.82 processing fee the
-    // payment detail itemises, so the two pages agree.
-    $('#acctVolume').textContent  = '$500.00';
-    $('#acctBalance').textContent = '$498.18';
+    // charge lands. Balance is the charge less the $1.00 platform fee and
+    // $1.82 processing fee the payment detail itemises, so the pages agree.
+    $('#acctVolume').textContent  = '$10.00';
+    $('#acctBalance').textContent = '$7.18';
 
     go('#account');
 
@@ -678,7 +1400,13 @@
   };
   startBoxes.forEach(b => b.addEventListener('change', syncStartOptions));
 
-  continueIn.addEventListener('click', () => dialog.classList.add('is-step2'));
+  // Moving on is a commit too. Whatever step one got — a website or just a
+  // name — the card prints on the way out of it, so nobody reaches step two
+  // still looking at a form's worth of blanks.
+  continueIn.addEventListener('click', () => {
+    printCard(!siteIn.value.trim());
+    dialog.classList.add('is-step2');
+  });
   $('#dialogBack').addEventListener('click', () => dialog.classList.remove('is-step2'));
 
   // Landing on the dashboard is where the setup guide takes over. The handover
