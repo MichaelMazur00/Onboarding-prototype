@@ -1215,6 +1215,147 @@
   bpSearch.addEventListener('input', renderGuides);
   renderGuides();
 
+  // A card opens the guide's detail in place of the list, titled as the
+  // card is; the breadcrumb returns to it. The steps and sample beneath are
+  // the same mocked guide for every card for now.
+  const gdPanel = $('[data-panel="guides"]');
+  const gdView  = $('#guideDetail');
+  const gdSteps = $$('.gd__step', gdView);
+
+  function showGuideDetail(on, card) {
+    gdPanel.classList.toggle('is-detail', on);
+    gdView.hidden = !on;
+    if (!on) return;
+    if (card) $('#gdTitle').innerHTML = $('.bp__ctitle', card).innerHTML;
+    $('.gd__pane', gdView).scrollTop = 0;
+  }
+  bpBody.addEventListener('click', e => {
+    const card = e.target.closest('.bp__card');
+    if (card) showGuideDetail(true, card);
+  });
+  $('#gdBack').addEventListener('click', () => showGuideDetail(false));
+
+  gdSteps.forEach(step => step.addEventListener('click', () => gdSteps.forEach(s => {
+    const on = s === step;
+    s.classList.toggle('is-current', on);
+    on ? s.setAttribute('aria-current', 'step') : s.removeAttribute('aria-current');
+  })));
+
+  // The request: one source for both the parameter table and every
+  // language's sample, so they can't drift apart.
+  const GD_REQUEST = {
+    display_name: 'Test account',
+    contact_email: 'testaccount@example.com',
+    configuration: { recipient: { capabilities: { stripe_balance: { stripe_transfers: { requested: true } } } } },
+    defaults: { responsibilities: { losses_collector: 'application', fees_collector: 'application' } },
+    dashboard: 'express',
+    identity: { country: 'us' },
+    include: ['configuration.merchant', 'configuration.recipient', 'identity', 'defaults', 'configuration.customer']
+  };
+
+  // Form-style parameter names, in the order the docs table lists them
+  const GD_PARAM_ORDER = ['display_name', 'contact_email', 'configuration', 'defaults', 'dashboard', 'include', 'identity'];
+  function flattenParams(v, name, out) {
+    if (v && typeof v === 'object') {
+      Object.entries(v).forEach(([k, child]) => flattenParams(child, `${name}[${k}]`, out));
+    } else out.push([name, String(v)]);
+    return out;
+  }
+  // Break long names before a bracket so they wrap as the docs do
+  const paramName = n => esc(n).replace(/\]\[/g, ']<wbr>[');
+  $('#gdParams').innerHTML = GD_PARAM_ORDER
+    .flatMap(k => flattenParams(GD_REQUEST[k], k, []))
+    .map(([n, v]) => `<tr><td>${paramName(n)}</td><td>${esc(v)}</td></tr>`).join('');
+
+  // Object literal → lines, in each language's own syntax
+  function literal(v, lang, depth) {
+    const pad = '  '.repeat(depth + 1), end = '  '.repeat(depth);
+    const str = s => lang === 'python' ? `"${s}"` : `'${s}'`;
+    if (Array.isArray(v)) return ['[', ...v.map(x => `${pad}${literal(x, lang, depth + 1).join('\n')},`), `${end}]`];
+    if (v && typeof v === 'object') {
+      const lines = ['{'];
+      Object.entries(v).forEach(([k, x]) => {
+        const [first, ...rest] = literal(x, lang, depth + 1);
+        const key = lang === 'python' ? `"${k}": ` : `${k}: `;
+        if (rest.length) lines.push(`${pad}${key}${first}`, ...rest.slice(0, -1), `${rest[rest.length - 1]},`);
+        else lines.push(`${pad}${key}${first},`);
+      });
+      return [...lines, `${end}}`];
+    }
+    if (typeof v === 'boolean') return [lang === 'python' ? (v ? 'True' : 'False') : String(v)];
+    return [str(v)];
+  }
+
+  const GD_NOTE = ["Don't put any keys in code. See https://docs.stripe.com/keys-best-practices.",
+                   'Find your keys at https://dashboard.stripe.com/apikeys.'];
+  const GD_SAMPLES = {
+    node: () => {
+      const body = literal(GD_REQUEST, 'node', 0);
+      return [...GD_NOTE.map(t => `// ${t}`),
+        "const stripe = require('stripe')('{{TEST_SECRET_KEY}}');", '',
+        `const account = await stripe.v2.core.accounts.create(${body[0]}`, ...body.slice(1, -1), `${body.at(-1)});`];
+    },
+    python: () => {
+      const body = literal(GD_REQUEST, 'python', 0);
+      return [...GD_NOTE.map(t => `# ${t}`),
+        'from stripe import StripeClient', '',
+        'client = StripeClient("{{TEST_SECRET_KEY}}")', '',
+        `account = client.v2.core.accounts.create(${body[0]}`, ...body.slice(1, -1), `${body.at(-1)})`];
+    },
+    ruby: () => {
+      const body = literal(GD_REQUEST, 'ruby', 0);
+      return [...GD_NOTE.map(t => `# ${t}`),
+        "require 'stripe'", '',
+        "client = Stripe::StripeClient.new('{{TEST_SECRET_KEY}}')", '',
+        `account = client.v2.core.accounts.create(${body[0]}`, ...body.slice(1, -1), `${body.at(-1)})`];
+    }
+  };
+
+  // Just enough highlighting for these samples: comments, strings,
+  // keywords and operators, and the name before a call's parenthesis.
+  const GD_TOKENS = /(\/\/.*$|#(?![{]).*$)|('[^']*'|"[^"]*")|\b(const|await|from|import|require(?=\s+')|True|False|true|false)\b|([A-Za-z_]\w*)(?=\()|(=|(?<!:):(?!:))/g;
+  function highlight(line) {
+    let out = '', at = 0;
+    line.replace(GD_TOKENS, (m, c, s, k, f, op, i) => {
+      out += esc(line.slice(at, i));
+      const cls = c ? 'c' : s ? 's' : f ? 'f' : 'k';
+      out += `<span class="${cls}">${esc(m)}</span>`;
+      at = i + m.length;
+      return m;
+    });
+    return out + esc(line.slice(at));
+  }
+
+  const gdCode = $('#gdCode');
+  const gdLang = $('#gdLang');
+  const gdMore = $('#gdMore');
+  let gdLines = [];
+
+  function renderSample() {
+    gdLines = GD_SAMPLES[gdLang.value]();
+    $('#gdSrc').innerHTML = gdLines.map((l, i) => `<span class="gd__ln" data-n="${i + 1}">${highlight(l)}</span>`).join('');
+    syncMore();
+  }
+  function syncMore() {
+    const open = !gdCode.classList.contains('is-collapsed');
+    gdMore.setAttribute('aria-expanded', String(open));
+    $('#gdMoreLabel').textContent = open ? 'Show less' : `Show all ${gdLines.length} lines`;
+  }
+  gdLang.addEventListener('change', renderSample);
+  gdMore.addEventListener('click', () => { gdCode.classList.toggle('is-collapsed'); syncMore(); });
+  $('#gdCopy').addEventListener('click', e => {
+    const btn = e.currentTarget;
+    navigator.clipboard?.writeText(gdLines.join('\n')).catch(() => {});
+    btn.classList.add('is-copied');
+    setTimeout(() => btn.classList.remove('is-copied'), 1200);
+  });
+  renderSample();
+
+  $('#gdWatch').addEventListener('click', e => {
+    const btn = e.currentTarget;
+    btn.setAttribute('aria-pressed', String(btn.getAttribute('aria-pressed') !== 'true'));
+  });
+
   /* ── Workbench · Shell ─────────────────── */
 
   // Not a real CLI — a handful of commands that answer the way the Stripe CLI

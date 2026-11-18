@@ -1146,6 +1146,59 @@
               </div>
             </div>
             <div class="bp__body" id="bpBody"></div>
+
+            <!-- Guide detail (Figma 21:51698) — opens from a card; the
+                 breadcrumb steps back to the list -->
+            <div class="gd" id="guideDetail" hidden>
+              <header class="gd__head">
+                <div class="gd__titles">
+                  <button class="gd__crumb" id="gdBack">Guides<img src="assets/icons/gd-breadcrumb-chevron.svg" width="8" height="8" alt="" /></button>
+                  <h3 class="gd__title" id="gdTitle"></h3>
+                </div>
+                <div class="gd__actions">
+                  <button class="gd__btn" id="gdWatch" aria-pressed="false"><img src="assets/icons/gd-watch.svg" width="12" height="12" alt="" />Watch</button>
+                  <button class="gd__btn gd__btn--icon" aria-label="More actions"><img src="assets/icons/gd-more.svg" width="12" height="12" alt="" /></button>
+                </div>
+              </header>
+              <div class="gd__body">
+                <ol class="gd__steps" id="gdSteps">
+                  <li><button class="gd__step is-current" aria-current="step"><span class="gd__num">1</span>Create an account</button></li>
+                  <li><button class="gd__step"><span class="gd__num">3</span>Create account link on your end</button></li>
+                  <li><button class="gd__step"><span class="gd__num">4</span>Create UI component to collect KYC information</button></li>
+                  <li><button class="gd__step"><span class="gd__num">5</span>Complete KYC collection</button></li>
+                  <li><button class="gd__step"><span class="gd__num">6</span>Wait for account to onboard</button></li>
+                </ol>
+                <section class="gd__pane">
+                  <div class="gd__intro">
+                    <h4 class="gd__ptitle">Create a product with a recurring price</h4>
+                    <p class="gd__pdesc">Create a connected account to represent a seller on your marketplace.</p>
+                  </div>
+                  <div class="gd__ref">
+                    <table class="gd__params">
+                      <thead><tr><th scope="col">Parameter</th><th scope="col">Value</th></tr></thead>
+                      <tbody id="gdParams"></tbody>
+                    </table>
+                    <!-- Sample rendered from GD_SAMPLES in app.js; collapsed to
+                         ten lines until "Show all" -->
+                    <div class="gd__code is-collapsed" id="gdCode">
+                      <div class="gd__codebar">
+                        <label class="gd__lang">
+                          <select id="gdLang" aria-label="Language">
+                            <option value="node">Node.js</option>
+                            <option value="python">Python</option>
+                            <option value="ruby">Ruby</option>
+                          </select>
+                          <i class="ev__updown"><i></i><i></i></i>
+                        </label>
+                        <button class="gd__copy" id="gdCopy" aria-label="Copy code"><i class="ev__glyph ev__glyph--copy"></i></button>
+                      </div>
+                      <pre class="gd__src"><code id="gdSrc"></code></pre>
+                      <button class="gd__more" id="gdMore" aria-expanded="false"><i class="gd__chev"></i><span id="gdMoreLabel"></span></button>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
           </div>
 
           <!-- Shell (from the Shell screenshot). A small working shell: the
