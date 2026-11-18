@@ -1243,7 +1243,7 @@
       line(''),
       line('Commands:'),
       line('  customers, payment_intents, charges, transfers   list | retrieve'),
-      line('  accounts   create | update | retrieve | list | delete | capabilities | persons | reject | unreject'),
+      line('  accounts   create | update | reject | unreject'),
       line('  listen     Listen for webhook events'),
       line('  trigger    Trigger test webhook events'),
       line('  clear      Clear the screen'),
@@ -1287,26 +1287,24 @@
       html = SHELL_COMMANDS.help();
     } else if (SHELL_COMMANDS[sub]) {
       html = SHELL_COMMANDS[sub](arg);
-    } else if (sub === 'accounts' && ['create', 'update', 'delete', 'capabilities', 'persons', 'reject', 'unreject'].includes(arg)) {
+    } else if (sub === 'accounts' && ['create', 'update', 'reject', 'unreject'].includes(arg)) {
       const account = SHELL_OBJECTS.accounts;
       const bodies = {
         create: { ...account, created: Math.floor(Date.now() / 1000), type: 'custom' },
         update: { ...account, metadata: { updated_from: 'api_explorer' } },
-        delete: { id: account.id, object: 'account', deleted: true },
-        capabilities: { object: 'list', data: [{ id: 'card_payments', object: 'capability', status: 'active' }, { id: 'transfers', object: 'capability', status: 'active' }], has_more: false },
-        persons: { object: 'list', data: [{ id: 'person_1Uct2JIQXb8NRkki', object: 'person', first_name: 'Stacy', last_name: 'Wilson' }], has_more: false },
         reject: { ...account, requirements: { disabled_reason: 'rejected.other' } },
         unreject: { ...account, requirements: { disabled_reason: null } }
       };
       html = `<pre class="ev__json">${renderJson(bodies[arg])}</pre>`;
-    } else if (SHELL_OBJECTS[sub] && (arg === 'list' || arg === 'retrieve')) {
+    } else if (SHELL_OBJECTS[sub] && sub !== 'accounts' && (arg === 'list' || arg === 'retrieve')) {
       const obj = SHELL_OBJECTS[sub];
       const body = arg === 'list'
         ? { object: 'list', data: [obj], has_more: false, url: `/v1/${sub}` }
         : obj;
       html = `<pre class="ev__json">${renderJson(body)}</pre>`;
     } else if (SHELL_OBJECTS[sub]) {
-      html = line(`Available operations for ${sub}: list, retrieve`, 'is-dim');
+      const ops = sub === 'accounts' ? 'create, update, reject, unreject' : 'list, retrieve';
+      html = line(`Available operations for ${sub}: ${ops}`, 'is-dim');
     } else {
       html = line(`unknown command "${sub}" for "stripe"`, 'is-err') +
              line(`Run 'stripe --help' for usage.`, 'is-dim');
@@ -1384,9 +1382,8 @@
     { value: 'transfers', label: 'Transfers' }
   ];
   const ACCOUNT_METHODS = [
-    ['create', 'Create'], ['update', 'Update'], ['retrieve', 'Retrieve'],
-    ['list', 'List'], ['delete', 'Delete'], ['capabilities', 'Capabilities'],
-    ['persons', 'Persons'], ['reject', 'Reject'], ['unreject', 'Unreject']
+    ['create', 'Create'], ['update', 'Update'],
+    ['reject', 'Reject'], ['unreject', 'Unreject']
   ];
   const DEFAULT_METHODS = [['list', 'List'], ['retrieve', 'Retrieve']];
   const CREATE_PARAMS = [
@@ -1400,11 +1397,6 @@
   const ACTION_PARAMS = {
     create: CREATE_PARAMS,
     update: [['account', 'Str'], ...CREATE_PARAMS],
-    retrieve: [['account', 'Str'], ['expand', 'Arr']],
-    list: [['created', 'Str'], ['ending_before', 'Str'], ['limit', 'Int'], ['starting_after', 'Str']],
-    delete: [['account', 'Str']],
-    capabilities: [['account', 'Str'], ['capability', 'Str']],
-    persons: [['account', 'Str'], ['person', 'Str'], ['limit', 'Int']],
     reject: [['account', 'Str'], ['reason', 'Enum']],
     unreject: [['account', 'Str']]
   };
