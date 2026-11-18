@@ -905,7 +905,28 @@
     inviteRows.querySelector('input').focus();
   });
 
-  $('#wbSkipInvite').addEventListener('click', closeWorkbench);
+  // Skipping swaps the invite for the full Overview: charts, keys, health
+  const wbOverview = $('#wbOverview');
+  $('#wbSkipInvite').addEventListener('click', () => {
+    $('.wb__empty', workbench).hidden = true;
+    wbOverview.hidden = false;
+    wbOverview.closest('.wb__panel').scrollTop = 0;
+  });
+
+  $('#wboHideTools').addEventListener('click', () => { $('#wboTools').hidden = true; });
+
+  const wboSecret = $('#wboSecret');
+  $('#wboReveal').addEventListener('click', e => {
+    const shown = wboSecret.classList.toggle('is-masked') === false;
+    e.currentTarget.setAttribute('aria-pressed', String(shown));
+    e.currentTarget.setAttribute('aria-label', shown ? 'Hide secret key' : 'Reveal secret key');
+  });
+
+  $$('[data-copy]', wbOverview).forEach(btn => btn.addEventListener('click', () => {
+    navigator.clipboard?.writeText(btn.dataset.copy).catch(() => {});
+    btn.classList.add('is-copied');
+    setTimeout(() => btn.classList.remove('is-copied'), 1200);
+  }));
 
   /* ── Workbench tabs ──────────────────── */
 
@@ -927,6 +948,9 @@
     workbench.classList.toggle('on-shell', name === 'shell');
   }
   wbTabs.forEach(t => t.addEventListener('click', () => showWbTab(t.dataset.tab)));
+
+  // Inspector's search has nothing to look up yet; keep Enter from reloading
+  $('#inSearch').addEventListener('submit', e => e.preventDefault());
 
   /* ── Workbench · shared ────────────────── */
 
