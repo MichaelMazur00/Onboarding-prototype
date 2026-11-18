@@ -2963,7 +2963,7 @@ body.wb-open .tb__glyph--toggle { transform: rotate(180deg); }
           mask: var(--mask-wb-top-expand) center / contain no-repeat;
 }
 
-/* ── Blueprints ── */
+/* ── Guides ── */
 
 .bp__head { flex: none; padding: 20px 16px 16px; border-bottom: 1px solid var(--wb-line); }
 .bp__title {
