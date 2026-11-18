@@ -203,7 +203,6 @@
   $('#taskBusinessModel').addEventListener('click', () => go('#connect'));
   $('#taskTestAccount').addEventListener('click', () => go('#connected'));
   $('#taskTestCharge').addEventListener('click', () => go('#account'));
-  $('#taskIntegrationGuide').addEventListener('click', completeIntegrationGuide);
   $('#taskInviteDevelopers').addEventListener('click', inviteDevelopers);
 
   // The account row and the back arrow walk into and out of the detail page
@@ -527,14 +526,13 @@
 
   /* ── Setup guide progress ──────────────── */
 
-  // Every task in the guide, in order. The first five are the ones the
-  // prototype can actually drive; the last two round out the seven the
+  // Every task in the guide, in order. The first four are the ones the
+  // prototype can actually drive; the last two round out the six the
   // progress bar measures against.
   const TASKS = [
     { el: $('#taskBusinessModel'),   label: 'Choose your business model',  route: '#connect'   },
     { el: $('#taskTestAccount'),     label: 'Create a test account',       route: '#connected' },
     { el: $('#taskTestCharge'),      label: 'Create a test charge',        route: '#account'   },
-    { el: $('#taskIntegrationGuide'),label: 'View your integration guide', route: '#account'   },
     { el: $('#taskInviteDevelopers'),label: 'Invite your developers',      action: 'workbench' },
     { label: 'Verify your identity' },
     { label: 'Verify your business' }
@@ -571,7 +569,7 @@
       guideNext.dataset.action = next.action || '';
     }
 
-    // Seven steps across the track; the resting 10px is the design's floor.
+    // Six steps across the track; the resting 10px is the design's floor.
     const done = index + 1;
     progress.style.width = `${Math.max(10, Math.round((done / TASKS.length) * TRACK))}px`;
 
@@ -728,16 +726,6 @@
     fadeIn(guide, 120);
   }
 
-  // The integration guide sends you to the real docs and checks itself off.
-  // The Connect group stays open: inviting your developers is still to come.
-  const INTEGRATION_DOCS = 'https://docs.stripe.com/connect/interactive-platform-guide';
-
-  function completeIntegrationGuide() {
-    window.open(INTEGRATION_DOCS, '_blank', 'noopener,noreferrer');
-    completeThrough(3);
-    fadeIn(guide);
-  }
-
   /* ── Workbench sheet ───────────────────── */
 
   // The last Connect task drives you into Workbench — where your developers
@@ -771,15 +759,13 @@
     }
   }
 
-  // TESTING: the step is unlocked from the start (see index.html), so it can
-  // be clicked before the four ahead of it are done. Then it only opens the
-  // sheet; it checks off once the steps ahead of it are done, as completing
-  // it would otherwise tick those off too.
-  const priorDone = () => $('#taskIntegrationGuide').classList.contains('is-done');
+  // The step unlocks once the test charge is created (see index.html). The
+  // guard stays so reaching it any other way can't tick off earlier steps.
+  const priorDone = () => $('#taskTestCharge').classList.contains('is-done');
 
   function inviteDevelopers() {
     if (priorDone() && !taskInvite.classList.contains('is-done')) {
-      completeThrough(4);
+      completeThrough(3);
       handOverOnClose = true;
     }
     openWorkbench();
@@ -905,7 +891,28 @@
     inviteRows.querySelector('input').focus();
   });
 
-  $('#wbSkipInvite').addEventListener('click', closeWorkbench);
+  // Skipping swaps the invite for the full Overview: charts, keys, health
+  const wbOverview = $('#wbOverview');
+  $('#wbSkipInvite').addEventListener('click', () => {
+    $('.wb__empty', workbench).hidden = true;
+    wbOverview.hidden = false;
+    wbOverview.closest('.wb__panel').scrollTop = 0;
+  });
+
+  $('#wboHideTools').addEventListener('click', () => { $('#wboTools').hidden = true; });
+
+  const wboSecret = $('#wboSecret');
+  $('#wboReveal').addEventListener('click', e => {
+    const shown = wboSecret.classList.toggle('is-masked') === false;
+    e.currentTarget.setAttribute('aria-pressed', String(shown));
+    e.currentTarget.setAttribute('aria-label', shown ? 'Hide secret key' : 'Reveal secret key');
+  });
+
+  $$('[data-copy]', wbOverview).forEach(btn => btn.addEventListener('click', () => {
+    navigator.clipboard?.writeText(btn.dataset.copy).catch(() => {});
+    btn.classList.add('is-copied');
+    setTimeout(() => btn.classList.remove('is-copied'), 1200);
+  }));
 
   /* ── Workbench tabs ──────────────────── */
 
@@ -927,6 +934,9 @@
     workbench.classList.toggle('on-shell', name === 'shell');
   }
   wbTabs.forEach(t => t.addEventListener('click', () => showWbTab(t.dataset.tab)));
+
+  // Inspector's search has nothing to look up yet; keep Enter from reloading
+  $('#inSearch').addEventListener('submit', e => e.preventDefault());
 
   /* ── Workbench · shared ────────────────── */
 
@@ -1169,39 +1179,13 @@
   /* ── Workbench · Guides ────────────────── */
 
   // [title, description, steps, API calls, products]. `backticks` in a title
-  // set that part in code type. The last
-  // three testing scenarios were cut off below their titles, so their
-  // descriptions and counts are filled in, not taken from the screenshots.
+  // set that part in code type.
   const GUIDES = [
     { section: 'Full integrations',
       sub: 'Step through a full integration with the code samples you need to quickly get started.',
       cards: [
-        ['Accept a one-time payment with Checkout', 'Learn how to accept a one-time payment using Stripe Checkout.', 3, 2, 'Payments'],
-        ['Accept a payment with PaymentElement', 'Learn how to accept a one-time payment by embedding the PaymentElement into your own UI.', 1, 1, 'Payments'],
-        ['Accept in-person payments on a physical reader', 'Learn how to accept in-person payments by testing a server-driven integration with a physical reader.', 2, 4, 'Terminal'],
-        ['B2B Payments with Issuing', 'Create virtual cards for your business to make purchases using your v2 Financial Account.', 4, 7, 'Issuing, Treasury'],
         ['Collect payments using Accounts v2 as a marketplace', 'Collect payments then pay out on your marketplace.', 2, 4, 'Connect, Checkout'],
-        ['Embedded Finance with Issuing', 'Build an embedded financial services integration with Issuing and Treasury for platforms.', 6, 12, 'Issuing, Treasury, Connect'],
-        ['Embedded Finance with Issuing (V2 Financial Accounts)', 'Build an embedded financial services integration with Issuing and V2 Financial Accounts, using V2 money movement APIs for funding.', 6, 12, 'Issuing, Treasury, Connect'],
-        ['Embedded payments and subscriptions using Accounts v2', 'Build an integration with embedded payments and subscriptions on Accounts v2.', 3, 8, 'Billing, Connect'],
-        ['Flat rate subscription with entitlements', 'Learn how to create a flat rate subscription with entitlements to manage customer feature access.', 5, 9, 'Billing, Checkout'],
-        ['Invoice payment with hosted page', 'Learn how to create and collect payment on an invoice using a hosted payment page.', 3, 6, 'Billing'],
-        ['Metered subscription with entitlements', 'Learn how to create a usage-based subscription with metering and entitlements to manage customer feature access.', 5, 12, 'Billing, Checkout'],
-        ['Model hybrid pricing with pricing plans', 'Charge your customers based on usage, recurring, or one-time fees.', 6, 14, 'Billing'],
-        ['Set up future payments', 'Save payment details in a Checkout Session and charge your customers later.', 3, 4, 'Payments']
-      ] },
-    { section: 'Testing scenarios',
-      sub: 'Learn how to create key resources for your Stripe integration.',
-      cards: [
-        ['Create a destination charge', 'Creates a charge on your platform account where your platform serves as the settlement merchant. Collects fees and immediately transfers the remaining funds to the connected account.', 1, 1, 'Connect'],
-        ['Create a destination `on_behalf_of` charge', 'Creates a charge on your platform account where a connected account serves as the settlement merchant. Collects fees and immediately transfers the remaining funds to the connected account.', 1, 1, 'Connect'],
-        ['Create a direct charge', 'Creates a charge directly on a connected account and transfers a collected fee to the platform.', 1, 1, 'Connect'],
-        ['Create a v2 account', 'Creates a connected account using the v2 API. Choose between a restricted account and an account that is fully onboarded and verified.', 1, 2, 'Connect'],
-        ['Create an account', 'Creates a connected account. Choose between a restricted account and an account that is fully onboarded and verified, enabling either your platform or Stripe to collect requirements.', 1, 1, 'Connect'],
-        ['Resolve a health alert', 'Resolves a health alert.', 1, 1, 'Health alerts'],
-        ['Test in-person payments on a simulated reader', 'Collect a payment on a simulated reader without needing physical hardware.', 2, 3, 'Terminal'],
-        ['Trigger a health alert', 'Triggers a health alert so you can see how your integration is notified.', 1, 1, 'Health alerts'],
-        ['Trigger Agentic Purchase', 'Simulates a purchase made by an AI agent on behalf of a customer.', 1, 2, 'Payments']
+        ['Collect payments as a platform', 'Collect payments directly on your connected accounts and take a fee.', 2, 4, 'Connect, Checkout']
       ] }
   ];
 

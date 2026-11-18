@@ -666,11 +666,8 @@
                     </button>
                     <button class="task is-locked" id="taskTestAccount" aria-disabled="true"><span class="task__dot"></span><span class="task__label">Create a test account</span></button>
                     <button class="task is-locked" id="taskTestCharge" aria-disabled="true"><span class="task__dot"></span><span class="task__label">Create a test charge</span></button>
-                    <button class="task is-locked" id="taskIntegrationGuide" aria-disabled="true"><span class="task__dot"></span><span class="task__label">View your integration guide</span></button>
-                    <!-- TESTING: unlocked from the start. To gate it behind the first four
-                         steps again, restore `class="task is-locked"` and
-                         `aria-disabled="true"` — completeThrough(3) unlocks it. -->
-                    <button class="task is-unlocked" id="taskInviteDevelopers"><span class="task__dot"></span><span class="task__label">Invite your developers</span></button>
+                    <!-- Locked until the test charge is created — completeThrough(2) unlocks it -->
+                    <button class="task is-locked" id="taskInviteDevelopers" aria-disabled="true"><span class="task__dot"></span><span class="task__label">Invite your developers</span></button>
                   </div></div>
                 </div>
               </div>
@@ -798,7 +795,7 @@
                 </div>
 
                 <div class="wb__invitefooter">
-                  <button class="wb__sendinvites sh__btn sh__btn--primary" type="submit">Send invites</button>
+                  <button class="wb__sendinvites sh__btn sh__btn--primary" type="submit"><i class="wb__sendicon" aria-hidden="true"></i>Send invites</button>
                   <button class="wb__skipinvite lg__textbtn" id="wbSkipInvite" type="button">Skip for now</button>
                 </div>
               </form>
@@ -814,6 +811,182 @@
             </section>
 
           </div>
+
+          <!-- What Overview becomes once the invite is skipped (from the
+               empty.png screenshot): the integration charts and testing tools -->
+          <div class="wbo" id="wbOverview" hidden>
+            <div class="wbo__main">
+              <div class="wbo__head">
+                <h3>Your integration</h3>
+                <label class="wbo__range">
+                  <span class="sr-only">Time range</span>
+                  <select>
+                    <option>Last 7 days</option>
+                    <option>Last 24 hours</option>
+                    <option>Last 30 days</option>
+                  </select>
+                  <i aria-hidden="true"></i>
+                </label>
+              </div>
+
+              <div class="wbo__grid">
+                <section class="wbo__card">
+                  <h4>API requests</h4>
+                  <p class="wbo__stat">16</p>
+                  <div class="wbo__chart" role="img" aria-label="16 successful API requests, all on Nov 17 and 18">
+                    <div class="wbo__plot">
+                      <span class="wbo__bar" style="--x: 86.5%; --h: 86.7%"></span>
+                      <span class="wbo__bar" style="--x: 88.6%; --h: 20%"></span>
+                    </div>
+                    <ol class="wbo__yaxis" aria-hidden="true"><li>15</li><li>10</li><li>5</li><li>0</li></ol>
+                  </div>
+                  <div class="wbo__xaxis" aria-hidden="true"><span>Nov 11, 10:00 AM</span><span>Nov 18, 10:00 AM</span></div>
+                  <ul class="wbo__legend">
+                    <li><i class="wbo__key"></i>Successful</li>
+                    <li><i class="wbo__key wbo__key--failed"></i>Failed</li>
+                  </ul>
+                </section>
+                <section class="wbo__card">
+                  <h4>API error distribution</h4>
+                  <p class="wbo__none">No errors in the last 7 days</p>
+                </section>
+                <section class="wbo__card">
+                  <h4>Event deliveries</h4>
+                  <p class="wbo__none">No deliveries in the last 7 days</p>
+                </section>
+                <section class="wbo__card">
+                  <h4>Event destination response time</h4>
+                  <p class="wbo__none">No deliveries in the last 7 days</p>
+                </section>
+              </div>
+              <p class="wbo__updated">Updated today 5:48:23 PM UTC</p>
+
+              <section class="wbo__section">
+                <h3>API versions</h3>
+                <ul class="wbo__rows">
+                  <li><span>2026-10-28.endive<b class="wbo__badge">Default</b><b class="wbo__badge wbo__badge--latest">Latest</b></span><span class="wbo__spark" aria-hidden="true"><i style="--h: 0%"></i><i style="--h: 0%"></i><i style="--h: 0%"></i><i style="--h: 0%"></i><i style="--h: 0%"></i><i style="--h: 100%"></i><i style="--h: 40%"></i></span></li>
+                  <li><span>2026-08-26.dahlia</span><span class="wbo__spark" aria-hidden="true"><i style="--h: 0%"></i><i style="--h: 0%"></i><i style="--h: 0%"></i><i style="--h: 0%"></i><i style="--h: 0%"></i><i style="--h: 100%"></i><i style="--h: 0%"></i></span></li>
+                </ul>
+              </section>
+
+              <section class="wbo__section">
+                <div class="wbo__sectionhead">
+                  <h3>API keys</h3>
+                  <button class="lg__textbtn" type="button">Manage API keys</button>
+                </div>
+                <ul class="wbo__rows">
+                  <li><span>Publishable key</span><code>pk_test_...KInR</code></li>
+                  <li><span>Secret key</span><code>sk_test_...vmv3</code></li>
+                </ul>
+              </section>
+            </div>
+
+            <aside class="wbo__side">
+              <section class="wbo__tools" id="wboTools">
+                <div class="wbo__toolshead">
+                  <h3>Testing tools</h3>
+                  <button class="lg__textbtn" id="wboHideTools" type="button">Hide</button>
+                </div>
+                <h4 class="wbo__subtitle">Test keys</h4>
+                <div class="wbo__key-field">
+                  <h5>Publishable key</h5>
+                  <p>Use this key when you're ready to launch your app.</p>
+                  <div class="wbo__keybox">
+                    <code>pk_test_51Ub2dKIQXb8NRkkiKWqQxqAWr7iZ46KpF7vttKVL3XpkDLBYD580CPqTnYh2m0aWzXk</code>
+                    <button class="wbo__keybtn" type="button" data-copy="pk_test_51Ub2dKIQXb8NRkkiKWqQxqAWr7iZ46KpF7vttKVL3XpkDLBYD580CPqTnYh2m0aWzXk" aria-label="Copy publishable key"><i class="ev__glyph ev__glyph--copy"></i></button>
+                  </div>
+                </div>
+                <div class="wbo__key-field">
+                  <h5>Secret key</h5>
+                  <p>Use this key to authenticate requests on your server.</p>
+                  <div class="wbo__keybox">
+                    <code id="wboSecret" class="is-masked">sk_test_demo_key_not_real_vmv3</code>
+                    <button class="wbo__keybtn" id="wboReveal" type="button" aria-label="Reveal secret key" aria-pressed="false"><i class="wbo__eye"></i></button>
+                    <button class="wbo__keybtn" type="button" data-copy="sk_test_demo_key_not_real_vmv3" aria-label="Copy secret key"><i class="ev__glyph ev__glyph--copy"></i></button>
+                  </div>
+                </div>
+                <button class="lg__textbtn wbo__allkeys" type="button">View all API keys</button>
+                <div class="wbo__deletion">
+                  <h4 class="wbo__subtitle">Test data deletion</h4>
+                  <div class="wbo__deleterow">
+                    <p>You can delete all the test data in this sandbox.</p>
+                    <button class="sh__btn" type="button">Review test data</button>
+                  </div>
+                </div>
+              </section>
+
+              <section class="wbo__health">
+                <h3>Health</h3>
+                <div class="wbo__healthbox">
+                  <span class="wbo__healthy" aria-hidden="true"><i></i></span>
+                  <h4>No active alerts, errors, or insights</h4>
+                  <p>Your integration is running smoothly</p>
+                </div>
+              </section>
+
+              <section class="wbo__resources">
+                <h3>Developer resources</h3>
+                <ul>
+                  <li><a href="#" target="_blank" rel="noopener">Developer quick start<i class="wbo__ext" aria-hidden="true"></i></a></li>
+                  <li><a href="#" target="_blank" rel="noopener">Documentation<i class="wbo__ext" aria-hidden="true"></i></a></li>
+                  <li><a href="#" target="_blank" rel="noopener">API reference<i class="wbo__ext" aria-hidden="true"></i></a></li>
+                  <li><a href="#" target="_blank" rel="noopener">Code samples<i class="wbo__ext" aria-hidden="true"></i></a></li>
+                  <li><a href="#" target="_blank" rel="noopener">Build with AI<i class="wbo__ext" aria-hidden="true"></i></a></li>
+                </ul>
+              </section>
+            </aside>
+          </div>
+          </div>
+
+          <!-- Inspector (from inspectorempty.png) — the empty state: nothing
+               inspected yet, so the side list is blank -->
+          <div class="wb__panel wb__panel--inspector" data-panel="inspector">
+            <aside class="in__side">
+              <label class="in__auto">
+                <input type="checkbox" role="switch" id="inAuto" checked />
+                <span class="in__switch" aria-hidden="true"></span>
+                <span class="in__autotext">
+                  <b>Auto-inspect</b>
+                  <span>Inspector will automatically update based on the resource displayed in the dashboard</span>
+                </span>
+              </label>
+            </aside>
+
+            <div class="in__main">
+              <div class="in__empty">
+                <div class="in__illo" aria-hidden="true">
+                  <div class="in__customer">
+                    <b>Sarah King</b>
+                    <span>sarah.king@example.com</span>
+                    <b class="in__details">Details</b>
+                    <small>Customer ID</small>
+                    <span>cus_L82G0DAIEgLtBf</span>
+                    <small>Balance</small>
+                    <span>$10.00 USD</span>
+                  </div>
+                  <span class="in__wire"></span>
+                  <span class="in__lens"><i></i></span>
+                  <span class="in__wire in__wire--head"></span>
+                  <div class="wb__json in__json">
+                    <p><span>"id":</span><em>"</em><span>cus_L82G0DAIEgLtBf</span><em>"</em></p>
+                    <p><span>"address":</span><em class="is-val">null</em><em>,</em></p>
+                    <p><span>"balance":</span><b>1000</b><em>,</em></p>
+                    <p><span>"created":</span><b>1644536220</b><em>,</em></p>
+                    <p><span>"currency":</span><em>"</em><span>USD</span><em>"</em><em>,</em></p>
+                    <p><span>"default_source":</span><em class="is-val">null</em><em>,</em></p>
+                    <p><span>"delinquent":</span><i>false</i><em>,</em></p>
+                  </div>
+                </div>
+
+                <h3 class="in__title">Peek under the hood with Inspector</h3>
+                <p class="in__lede">Inspect any API object to view its data, related logs and events. Then, use the API Explorer and Shell to edit the object directly from Workbench.</p>
+
+                <form class="in__search" id="inSearch" role="search">
+                  <i class="ev__glyph ev__glyph--search" aria-hidden="true"></i>
+                  <input type="text" id="inQuery" placeholder="Enter an object ID" aria-label="Object ID" autocomplete="off" spellcheck="false" data-lpignore="true" data-form-type="other" />
+                </form>
+              </div>
+            </div>
           </div>
 
           <!-- Webhooks (from the Webhooks screenshot) — the empty state -->
@@ -962,7 +1135,7 @@
           <div class="wb__panel wb__panel--events" data-panel="guides">
             <div class="bp__head">
               <h3 class="bp__title">Guides</h3>
-              <p class="bp__sub">Build your integration from preconfigured flows or run quick testing scenarios.</p>
+              <p class="bp__sub">Build your integration from preconfigured flows.</p>
               <div class="ev__filters bp__filters">
                 <label class="ev__search">
                   <i class="ev__glyph ev__glyph--search"></i>
