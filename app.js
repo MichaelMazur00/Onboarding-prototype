@@ -203,7 +203,6 @@
   $('#taskBusinessModel').addEventListener('click', () => go('#connect'));
   $('#taskTestAccount').addEventListener('click', () => go('#connected'));
   $('#taskTestCharge').addEventListener('click', () => go('#account'));
-  $('#taskIntegrationGuide').addEventListener('click', completeIntegrationGuide);
   $('#taskInviteDevelopers').addEventListener('click', inviteDevelopers);
 
   // The account row and the back arrow walk into and out of the detail page
@@ -527,14 +526,13 @@
 
   /* ── Setup guide progress ──────────────── */
 
-  // Every task in the guide, in order. The first five are the ones the
-  // prototype can actually drive; the last two round out the seven the
+  // Every task in the guide, in order. The first four are the ones the
+  // prototype can actually drive; the last two round out the six the
   // progress bar measures against.
   const TASKS = [
     { el: $('#taskBusinessModel'),   label: 'Choose your business model',  route: '#connect'   },
     { el: $('#taskTestAccount'),     label: 'Create a test account',       route: '#connected' },
     { el: $('#taskTestCharge'),      label: 'Create a test charge',        route: '#account'   },
-    { el: $('#taskIntegrationGuide'),label: 'View your integration guide', route: '#account'   },
     { el: $('#taskInviteDevelopers'),label: 'Invite your developers',      action: 'workbench' },
     { label: 'Verify your identity' },
     { label: 'Verify your business' }
@@ -571,7 +569,7 @@
       guideNext.dataset.action = next.action || '';
     }
 
-    // Seven steps across the track; the resting 10px is the design's floor.
+    // Six steps across the track; the resting 10px is the design's floor.
     const done = index + 1;
     progress.style.width = `${Math.max(10, Math.round((done / TASKS.length) * TRACK))}px`;
 
@@ -728,16 +726,6 @@
     fadeIn(guide, 120);
   }
 
-  // The integration guide sends you to the real docs and checks itself off.
-  // The Connect group stays open: inviting your developers is still to come.
-  const INTEGRATION_DOCS = 'https://docs.stripe.com/connect/interactive-platform-guide';
-
-  function completeIntegrationGuide() {
-    window.open(INTEGRATION_DOCS, '_blank', 'noopener,noreferrer');
-    completeThrough(3);
-    fadeIn(guide);
-  }
-
   /* ── Workbench sheet ───────────────────── */
 
   // The last Connect task drives you into Workbench — where your developers
@@ -771,15 +759,13 @@
     }
   }
 
-  // TESTING: the step is unlocked from the start (see index.html), so it can
-  // be clicked before the four ahead of it are done. Then it only opens the
-  // sheet; it checks off once the steps ahead of it are done, as completing
-  // it would otherwise tick those off too.
-  const priorDone = () => $('#taskIntegrationGuide').classList.contains('is-done');
+  // The step unlocks once the test charge is created (see index.html). The
+  // guard stays so reaching it any other way can't tick off earlier steps.
+  const priorDone = () => $('#taskTestCharge').classList.contains('is-done');
 
   function inviteDevelopers() {
     if (priorDone() && !taskInvite.classList.contains('is-done')) {
-      completeThrough(4);
+      completeThrough(3);
       handOverOnClose = true;
     }
     openWorkbench();

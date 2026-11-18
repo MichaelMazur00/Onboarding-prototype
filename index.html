@@ -666,11 +666,8 @@
                     </button>
                     <button class="task is-locked" id="taskTestAccount" aria-disabled="true"><span class="task__dot"></span><span class="task__label">Create a test account</span></button>
                     <button class="task is-locked" id="taskTestCharge" aria-disabled="true"><span class="task__dot"></span><span class="task__label">Create a test charge</span></button>
-                    <button class="task is-locked" id="taskIntegrationGuide" aria-disabled="true"><span class="task__dot"></span><span class="task__label">View your integration guide</span></button>
-                    <!-- TESTING: unlocked from the start. To gate it behind the first four
-                         steps again, restore `class="task is-locked"` and
-                         `aria-disabled="true"` — completeThrough(3) unlocks it. -->
-                    <button class="task is-unlocked" id="taskInviteDevelopers"><span class="task__dot"></span><span class="task__label">Invite your developers</span></button>
+                    <!-- Locked until the test charge is created — completeThrough(2) unlocks it -->
+                    <button class="task is-locked" id="taskInviteDevelopers" aria-disabled="true"><span class="task__dot"></span><span class="task__label">Invite your developers</span></button>
                   </div></div>
                 </div>
               </div>
