@@ -783,6 +783,8 @@
       handOverOnClose = true;
     }
     openWorkbench();
+    requestAnimationFrame(() =>
+      inviteCard.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' }));
   }
 
   // The Developers bar toggles the sheet; its ringed chevron turns to match.
@@ -813,6 +815,97 @@
       copyLink.setAttribute('aria-label', 'Copy link');
     }, 1600);
   });
+
+  /* ── Workbench · invite developers ───── */
+
+  const inviteCard    = $('#wbInvite');
+  const inviteForm    = $('#wbInviteForm');
+  const inviteRows    = $('#wbInviteRows');
+  const inviteError   = $('#wbInviteError');
+  const copyInvite    = $('#wbCopyInvite');
+  const inviteRowHTML = inviteRows.firstElementChild.outerHTML;
+  let inviteCopyTimer = null;
+
+  // LastPass injects its own three-dot control into email fields even when
+  // data-lpignore is present. Remove only those extension-owned hosts, both
+  // at boot and whenever it scans a newly added invite row.
+  const lastPassUi = '[data-lastpass-icon-root], [data-lastpass-root], [id^="__lpform_"]';
+  const removeLastPassUi = root => {
+    if (root.nodeType !== Node.ELEMENT_NODE) return;
+    if (root.matches(lastPassUi)) {
+      root.remove();
+      return;
+    }
+    root.querySelectorAll(lastPassUi).forEach(el => el.remove());
+  };
+  new MutationObserver(changes => {
+    changes.forEach(change => change.addedNodes.forEach(removeLastPassUi));
+  }).observe(document.documentElement, { childList: true, subtree: true });
+  document.querySelectorAll(lastPassUi).forEach(el => el.remove());
+
+  function syncInviteRows() {
+    inviteRows.classList.toggle('has-multiple', inviteRows.children.length > 1);
+  }
+
+  $('#wbAddInvite').addEventListener('click', () => {
+    inviteRows.insertAdjacentHTML('beforeend', inviteRowHTML);
+    syncInviteRows();
+  });
+
+  inviteRows.addEventListener('click', e => {
+    const remove = e.target.closest('.wb__removerow');
+    if (!remove || inviteRows.children.length === 1) return;
+    remove.closest('.wb__inviterow').remove();
+    syncInviteRows();
+  });
+
+  inviteRows.addEventListener('input', e => {
+    if (!e.target.matches('.wb__email input')) return;
+    e.target.closest('.wb__inviterow').classList.remove('is-invalid');
+    inviteError.textContent = '';
+  });
+
+  copyInvite.addEventListener('click', () => {
+    const link = location.href.split('#')[0] + '#connect';
+    navigator.clipboard?.writeText(link).catch(() => {});
+    copyInvite.classList.add('is-copied');
+    copyInvite.querySelector('span').textContent = 'Invite link copied';
+    clearTimeout(inviteCopyTimer);
+    inviteCopyTimer = setTimeout(() => {
+      copyInvite.classList.remove('is-copied');
+      copyInvite.querySelector('span').textContent = 'Copy invite link';
+    }, 1600);
+  });
+
+  inviteForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const inputs = $$('.wb__email input', inviteRows);
+    const isEmail = input => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value.trim());
+    const invalid = inputs.filter(input => !isEmail(input));
+
+    $$('.wb__inviterow', inviteRows).forEach(row => row.classList.remove('is-invalid'));
+    if (invalid.length) {
+      invalid.forEach(input => input.closest('.wb__inviterow').classList.add('is-invalid'));
+      inviteError.textContent = invalid.length === 1
+        ? 'Enter a valid email address.'
+        : 'Enter a valid email address for each invite.';
+      invalid[0].focus();
+      return;
+    }
+
+    inviteError.textContent = '';
+    inviteCard.classList.add('is-sent');
+  });
+
+  $('#wbInviteMore').addEventListener('click', () => {
+    inviteCard.classList.remove('is-sent');
+    inviteRows.innerHTML = inviteRowHTML;
+    syncInviteRows();
+    inviteForm.reset();
+    inviteRows.querySelector('input').focus();
+  });
+
+  $('#wbSkipInvite').addEventListener('click', closeWorkbench);
 
   /* ── Workbench tabs ──────────────────── */
 

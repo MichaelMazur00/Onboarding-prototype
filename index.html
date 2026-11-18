@@ -740,7 +740,6 @@
           <div class="wb__utils">
             <button class="wb__icon" id="wbCopyLink" aria-label="Copy link"><i class="wb__topglyph wb__topglyph--link"></i></button>
             <i class="wb__sep"></i>
-            <button class="wb__icon" aria-label="More options"><i class="wb__topglyph wb__topglyph--more"></i></button>
             <button class="wb__icon" aria-label="Expand"><i class="wb__topglyph wb__topglyph--expand"></i></button>
             <button class="wb__icon" id="wbClose" aria-label="Close Workbench"><i class="wb__topglyph wb__topglyph--close"></i></button>
           </div>
@@ -767,27 +766,54 @@
               <span class="wb__tile wb__tile--platform"><img src="assets/icons/wb-platform.svg" alt="" /></span>
             </div>
 
-            <div class="wb__hero">
-              <h2>Get started building with Connect</h2>
-              <p>Use our starter guide to help guide you through the process of getting your SaaS platform up and running.</p>
-            </div>
+            <section class="wb__invite" id="wbInvite" aria-labelledby="wbInviteTitle">
+              <div class="wb__invitehead">
+                <h3 id="wbInviteTitle">Invite your developers</h3>
+                <p>Bring your team into the sandbox to build, test, and monitor your Connect integration together.</p>
+              </div>
 
-            <div class="wb__modules">
-              <div class="wb__module">
-                <p class="wb__mtitle">Create an example SaaS platform</p>
-                <div class="wb__mbody">
-                  <p>Explore an example Connect SaaS platform in our new<br />sandbox experience to understand all the pieces.</p>
-                  <a class="wb__link">Get started <img src="assets/icons/wb-arrow-right.svg" alt="" /></a>
+              <form class="wb__inviteform" id="wbInviteForm" data-lpignore="true" data-form-type="other" novalidate>
+                <div class="wb__inviterows" id="wbInviteRows">
+                  <div class="wb__inviterow">
+                    <label class="wb__email">
+                      <span class="sr-only">Developer email address</span>
+                      <input type="search" name="invitee" placeholder="developer@example.com" inputmode="email" autocomplete="off" autocapitalize="none" spellcheck="false" data-lpignore="true" data-form-type="other" />
+                    </label>
+                    <label class="wb__role">
+                      <span class="sr-only">Role</span>
+                      <select name="invite-role" aria-label="Role">
+                        <option>Developer</option>
+                        <option>Admin</option>
+                        <option>Viewer</option>
+                      </select>
+                      <i aria-hidden="true"></i>
+                    </label>
+                    <button class="wb__removerow" type="button" aria-label="Remove invite" title="Remove invite">&times;</button>
+                  </div>
                 </div>
-              </div>
-              <div class="wb__module">
-                <p class="wb__mtitle">Create an example Marketplace</p>
-                <div class="wb__mbody">
-                  <p>Already familiar with all the parts that need to built? Dive straight into the details by looking at our documentation.</p>
-                  <a class="wb__link">Get started <img src="assets/icons/wb-arrow-right.svg" alt="" /></a>
+                <p class="wb__inviteerror" id="wbInviteError" role="alert"></p>
+
+                <div class="wb__inviteactions">
+                  <button class="wb__inviteaction" id="wbAddInvite" type="button"><i class="wb__inviteplus" aria-hidden="true"></i>Add another</button>
+                  <button class="wb__inviteaction" id="wbCopyInvite" type="button"><i class="wb__invitelink" aria-hidden="true"></i><span>Copy invite link</span></button>
                 </div>
+
+                <div class="wb__invitefooter">
+                  <button class="wb__skipinvite lg__textbtn" id="wbSkipInvite" type="button">Skip for now</button>
+                  <button class="wb__sendinvites sh__btn sh__btn--primary" type="submit">Send invites</button>
+                </div>
+              </form>
+
+              <div class="wb__invitesuccess" id="wbInviteSuccess" role="status" aria-live="polite">
+                <span class="wb__invitecheck" aria-hidden="true">&#10003;</span>
+                <div>
+                  <h4>Invites sent</h4>
+                  <p>Your developers can now join this sandbox.</p>
+                </div>
+                <button id="wbInviteMore" type="button">Invite more</button>
               </div>
-            </div>
+            </section>
+
           </div>
           </div>
 
@@ -824,7 +850,7 @@
               <div class="ev__filters">
                 <label class="ev__search">
                   <i class="ev__glyph ev__glyph--search"></i>
-                  <input type="text" id="evSearch" placeholder="Find event by ID..." autocomplete="off" spellcheck="false" />
+                  <input type="text" id="evSearch" placeholder="Find event by ID" autocomplete="off" spellcheck="false" />
                 </label>
                 <button class="ev__pill"><i class="ev__glyph ev__glyph--add"></i>Date</button>
                 <button class="ev__pill"><i class="ev__glyph ev__glyph--add"></i>Status</button>
@@ -877,7 +903,7 @@
               <div class="ev__filters">
                 <label class="ev__search">
                   <i class="ev__glyph ev__glyph--search"></i>
-                  <input type="text" id="lgSearch" placeholder="Filter by resource ID..." autocomplete="off" spellcheck="false" />
+                  <input type="text" id="lgSearch" placeholder="Filter by resource ID" autocomplete="off" spellcheck="false" />
                 </label>
                 <button class="ev__pill"><i class="ev__glyph ev__glyph--add"></i>Connected account ID</button>
                 <button class="ev__pill"><i class="ev__glyph ev__glyph--add"></i>Date</button>
@@ -941,7 +967,7 @@
               <div class="ev__filters bp__filters">
                 <label class="ev__search">
                   <i class="ev__glyph ev__glyph--search"></i>
-                  <input type="text" id="bpSearch" placeholder="Search for a blueprint..." autocomplete="off" spellcheck="false" />
+                  <input type="text" id="bpSearch" placeholder="Search for a blueprint" autocomplete="off" spellcheck="false" />
                 </label>
                 <button class="ev__pill"><i class="ev__glyph ev__glyph--add"></i>Product</button>
                 <button class="ev__pill"><i class="ev__glyph ev__glyph--add"></i>Type</button>
@@ -1038,7 +1064,7 @@
         <div class="wb__promptrow">
           <label class="wb__shell">
             <span class="wb__prompt">furever/furever-sandbox $&nbsp;</span>
-            <input type="text" id="wbPrompt" placeholder="Enter a shell command..." autocomplete="off" spellcheck="false" aria-label="Shell command" />
+            <input type="text" id="wbPrompt" placeholder="Enter a shell command" autocomplete="off" spellcheck="false" aria-label="Shell command" />
           </label>
           <div class="wb__promptutils">
             <button class="wb__icon" aria-label="Assistant"><i class="tb__glyph tb__glyph--sparkle"></i></button>

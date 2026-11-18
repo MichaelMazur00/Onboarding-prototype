@@ -6,6 +6,18 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
 :root {
   /* Design tokens (Figma) */
   --text:              #353A44;   /* Text/Default */
@@ -101,7 +113,6 @@
   --mask-chevron-up: url("data:image/svg+xml,%3Csvg preserveAspectRatio='none' overflow='visible' style='display: block%3B' width='8' height='8' viewBox='0 0 8 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg id='NextIcon__xxsmall--chevronUp'%3E%3Cpath id='icon' fill-rule='evenodd' clip-rule='evenodd' d='M0.606079 5.66649C0.450378 5.51728 0.38 5.31706 0.375046 5.11719C0.376927 4.93316 0.446133 4.74943 0.583516 4.60607L3.45852 1.60607C3.5999 1.45854 3.79536 1.37509 3.99969 1.375C4.20403 1.37491 4.39956 1.45821 4.54107 1.60562L7.41607 4.60062C7.55497 4.74532 7.63 4.93128 7.625 5.11719C7.62572 5.31519 7.5485 5.51312 7.39439 5.66106C7.09557 5.9479 6.62079 5.9382 6.33395 5.63938L4.00046 3.20849L1.6665 5.64393C1.3799 5.94299 0.905136 5.95309 0.606079 5.66649Z' fill='%236C7688'/%3E%3C/g%3E%3C/svg%3E");
   --mask-chevron-down-8: url("data:image/svg+xml,%3Csvg preserveAspectRatio='none' overflow='visible' style='display: block%3B' width='8' height='8' viewBox='0 0 8 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg id='NextIcon__xxsmall--chevronDown'%3E%3Cpath id='icon' fill-rule='evenodd' clip-rule='evenodd' d='M0.606079 2.33351C0.307021 2.62011 0.29692 3.09487 0.583516 3.39393L3.45852 6.39393C3.5999 6.54146 3.79536 6.62491 3.99969 6.625C4.20403 6.62509 4.39956 6.54179 4.54107 6.39438L7.41607 3.39938C7.70291 3.10056 7.69321 2.62579 7.39439 2.33894C7.09557 2.0521 6.62079 2.0618 6.33395 2.36062L4.00046 4.79151L1.6665 2.35607C1.3799 2.05701 0.905136 2.04691 0.606079 2.33351Z' fill='%236C7688'/%3E%3C/g%3E%3C/svg%3E");
   --mask-wb-top-link: url("data:image/svg+xml,%3Csvg aria-hidden='true' width='16' height='16' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.707 7.091a2.685 2.685 0 0 0-3.798-3.798L7.763 4.44a.753.753 0 1 1-1.066-1.066l1.147-1.146a4.192 4.192 0 0 1 5.928 5.928l-1.146 1.147a.753.753 0 0 1-1.066-1.066l1.147-1.146Z'%3E%3C/path%3E%3Cpath d='M5.26 10.76a.753.753 0 0 1 0-1.066l4.434-4.435a.753.753 0 0 1 1.065 1.065L6.325 10.76a.753.753 0 0 1-1.066 0Z'%3E%3C/path%3E%3Cpath d='M3.293 12.707a2.685 2.685 0 0 1 0-3.798L4.44 7.763a.753.753 0 1 0-1.066-1.066L2.228 7.844a4.192 4.192 0 0 0 5.928 5.928l1.147-1.146a.753.753 0 0 0-1.066-1.066l-1.146 1.147a2.685 2.685 0 0 1-3.798 0Z'%3E%3C/path%3E%3C/svg%3E");
-  --mask-wb-top-more: url("data:image/svg+xml,%3Csvg aria-hidden='true' width='16' height='16' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 9.25a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5Zm3.5 0a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5Zm-7 0a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5Z'%3E%3C/path%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M8 14.5A6.5 6.5 0 0 0 14.5 8c0-3.592-2.9-6.5-6.5-6.5A6.5 6.5 0 0 0 1.5 8 6.5 6.5 0 0 0 8 14.5ZM8 16a8 8 0 0 0 8-8c0-4.419-3.57-8-8-8a8 8 0 0 0-8 8 8 8 0 0 0 8 8Z'%3E%3C/path%3E%3C/svg%3E");
   --mask-wb-top-expand: url("data:image/svg+xml,%3Csvg aria-hidden='true' width='16' height='16' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M12.5 2h-9A1.5 1.5 0 0 0 2 3.5v9A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 12.5 2ZM3.5.5a3 3 0 0 0-3 3v9a3 3 0 0 0 3 3h9a3 3 0 0 0 3-3v-9a3 3 0 0 0-3-3h-9Z'%3E%3C/path%3E%3Cpath d='M11.76 3.5H8.35a.75.75 0 0 0 0 1.5h1.59L5 9.94v-1.6a.75.75 0 0 0-1.5 0v3.41a.75.75 0 0 0 .75.75h3.41a.75.75 0 1 0 0-1.5h-1.6l4.95-4.95v1.61a.75.75 0 0 0 1.5 0V4.25a.75.75 0 0 0-.75-.75Z'%3E%3C/path%3E%3C/svg%3E");
   --mask-wb-top-close: url("data:image/svg+xml,%3Csvg aria-hidden='true' width='16' height='16' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.53 4.47a.75.75 0 0 0-1.06 1.06L6.94 8l-2.47 2.47a.75.75 0 1 0 1.06 1.06L8 9.06l2.47 2.47a.75.75 0 1 0 1.06-1.06L9.06 8l2.47-2.47a.75.75 0 0 0-1.06-1.06L8 6.94 5.53 4.47Z'%3E%3C/path%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M16 8a8 8 0 0 1-8 8 8 8 0 0 1-8-8 8 8 0 0 1 8-8c4.43 0 8 3.581 8 8Zm-1.5 0A6.5 6.5 0 0 1 8 14.5 6.5 6.5 0 0 1 1.5 8 6.5 6.5 0 0 1 8 1.5c3.6 0 6.5 2.908 6.5 6.5Z'%3E%3C/path%3E%3C/svg%3E");
   --mask-wb-search: url("data:image/svg+xml,%3Csvg aria-hidden='true' width='12' height='12' viewBox='0 0 12 12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M7.883 9.085a5 5 0 1 1 1.202-1.202l2.666 2.666a.847.847 0 0 1 0 1.202.847.847 0 0 1-1.202 0L7.883 9.085ZM8.3 5a3.3 3.3 0 1 1-6.6 0 3.3 3.3 0 0 1 6.6 0Z'%3E%3C/path%3E%3C/svg%3E");
@@ -2296,9 +2307,12 @@ body.wb-open .tb__glyph--toggle { transform: rotate(180deg); }
           mask: var(--glyph) center / 16px 16px no-repeat;
 }
 .wb__topglyph--link   { --glyph: var(--mask-wb-top-link); }
-.wb__topglyph--more   { --glyph: var(--mask-wb-top-more); }
 .wb__topglyph--expand { --glyph: var(--mask-wb-top-expand); }
 .wb__topglyph--close  { --glyph: var(--mask-wb-top-close); }
+/* The overflow menu is intentionally not part of Workbench. Keep it hidden
+   even if older cached markup or a future merge reintroduces the control. */
+.wb__utils [aria-label="More options"],
+.wb__topglyph--more { display: none !important; }
 #wbCopyLink.is-copied { color: var(--wb-action); }
 .wb__icon { display: flex; transition: opacity var(--t-fast) var(--ease); }
 @media (hover: hover) and (pointer: fine) {
@@ -2369,60 +2383,179 @@ body.wb-open .tb__glyph--toggle { transform: rotate(180deg); }
   white-space: nowrap;
 }
 .wb__json p { display: flex; align-items: baseline; }
-.wb__json p > :first-child { margin-right: 9.142px; }   /* the design's fixed-width gap */
+.wb__json p > :first-child { margin-right: 9.142px; }
 .wb__json span { color: var(--wb-text); }
-.wb__json em   { font-style: normal; font-size: 10.666px; color: var(--wb-subdued); }
+.wb__json em { font-style: normal; font-size: 10.666px; color: var(--wb-subdued); }
 .wb__json em.is-val { font-size: inherit; }
-.wb__json b    { font-weight: 400; color: #3EAE20; }  /* Text/Feedback Success, dark */
-.wb__json i    { font-style: normal; color: #2B9DF6; } /* Text/Feedback Info, dark */
+.wb__json b { font-weight: 400; color: #3EAE20; }
+.wb__json i { font-style: normal; color: #2B9DF6; }
 
-.wb__hero {
+/* Invite form — set directly on the Overview canvas, using its existing type
+   hierarchy and dark form controls. */
+.wb__invite {
   width: 560px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding-top: 4px;
+  gap: 16px;
 }
-.wb__hero h2 {
+.wb__invitehead { display: flex; flex-direction: column; gap: 8px; }
+.wb__invitehead h3 {
   font-family: var(--font-display);
   font-size: 24px;
   line-height: 32px;
   font-weight: 700;
   letter-spacing: 0.3px;
-  font-feature-settings: "lnum" 1, "pnum" 1;
+  color: var(--wb-text);
 }
-.wb__hero p {
+.wb__invitehead p {
+  color: var(--wb-text);
   font-size: 16px;
   line-height: 24px;
   letter-spacing: -0.31px;
-  font-feature-settings: "lnum" 1, "tnum" 1;
 }
-
-.wb__modules { width: 560px; display: flex; flex-direction: column; gap: 16px; }
-.wb__module {
-  height: 100px;
-  padding: 16px;
+.wb__inviteform { display: flex; flex-direction: column; gap: 12px; }
+.wb__inviterows { display: flex; flex-direction: column; gap: 8px; }
+.wb__inviterow {
+  height: 40px;
+  display: flex;
+  align-items: center;
   border: 1px solid var(--wb-line);
   border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  background: var(--wb-bg);
+  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
 }
-.wb__mtitle { font-weight: 600; }
-.wb__mbody { display: flex; align-items: flex-start; }
-.wb__mbody p { flex: 1; min-width: 280px; }
-.wb__link {
-  display: inline-flex;
+.wb__inviterow:focus-within {
+  border-color: var(--wb-action);
+  box-shadow: 0 0 0 1px var(--wb-action);
+}
+.wb__inviterow.is-invalid { border-color: #E35D6A; }
+.wb__email { flex: 1; min-width: 0; height: 100%; }
+.wb__email input,
+.wb__role select {
+  width: 100%;
+  height: 100%;
+  appearance: none;
+  border: 0;
+  outline: 0;
+  font: inherit;
+  color: var(--wb-text);
+  background: transparent;
+}
+.wb__email input { padding: 0 12px; }
+.wb__email input::-webkit-search-cancel-button { display: none; }
+.wb__email input::placeholder { color: var(--wb-muted); opacity: 1; }
+.wb__role {
+  position: relative;
+  width: 102px;
+  height: 100%;
+  display: flex;
   align-items: center;
-  gap: 4px;
-  font-weight: 600;
-  color: var(--wb-action);
+  padding-left: 12px;
+  border-left: 1px solid var(--wb-line);
+}
+.wb__role select {
+  width: auto;
+  min-width: 0;
+  field-sizing: content;
+  padding: 0;
   cursor: pointer;
 }
-.wb__link img { transition: transform var(--t-fast) var(--ease); }
-@media (hover: hover) and (pointer: fine) {
-  .wb__link:hover img { transform: translateX(2px); }
+.wb__role i {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  margin-left: 8px;
+  pointer-events: none;
+  background: var(--wb-subdued);
+  -webkit-mask: var(--mask-chevron-down-8) center / 8px 8px no-repeat;
+          mask: var(--mask-chevron-down-8) center / 8px 8px no-repeat;
 }
+.wb__removerow {
+  width: 36px;
+  flex: none;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  color: var(--wb-subdued) !important;
+  font-size: 19px !important;
+  transition: opacity var(--t-fast) var(--ease);
+}
+.wb__inviterows.has-multiple .wb__removerow { opacity: 1; pointer-events: auto; }
+@media (hover: hover) and (pointer: fine) {
+  .wb__removerow:hover { color: var(--wb-text) !important; }
+}
+.wb__inviteerror {
+  display: none;
+  margin-top: -4px;
+  color: #F18B94;
+  font-size: 13px;
+  line-height: 18px;
+}
+.wb__inviteerror:not(:empty) { display: block; }
+.wb__inviteactions { display: flex; align-items: center; justify-content: space-between; }
+.wb__inviteaction {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--wb-subdued) !important;
+  font-weight: 600 !important;
+  transition: color var(--t-fast) var(--ease);
+}
+.wb__inviteaction i {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  background: currentColor;
+}
+.wb__inviteplus {
+  -webkit-mask: var(--mask-wb-plus) center / 16px 16px no-repeat;
+          mask: var(--mask-wb-plus) center / 16px 16px no-repeat;
+}
+.wb__invitelink {
+  -webkit-mask: var(--mask-wb-top-link) center / 16px 16px no-repeat;
+          mask: var(--mask-wb-top-link) center / 16px 16px no-repeat;
+}
+@media (hover: hover) and (pointer: fine) {
+  .wb__inviteaction:hover { color: var(--wb-text) !important; }
+}
+.wb__inviteaction.is-copied { color: #6CC56A !important; }
+.wb__invitefooter {
+  margin-top: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 32px;
+}
+.wb__invitefooter .lg__textbtn,
+.wb__invitefooter .sh__btn { font-size: 14px; line-height: 20px; }
+.wb__invitesuccess {
+  display: none;
+  min-height: 96px;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #315E36;
+  border-radius: 8px;
+  background: rgba(62, 174, 32, .08);
+}
+.wb__invite.is-sent .wb__inviteform { display: none; }
+.wb__invite.is-sent .wb__invitesuccess { display: flex; animation: fade-in var(--t-mid) var(--ease-enter); }
+.wb__invitecheck {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #0F1C10;
+  background: #6CC56A;
+  font-size: 15px;
+  font-weight: 700;
+}
+.wb__invitesuccess div { flex: 1; }
+.wb__invitesuccess h4 { color: var(--wb-text); font-size: 14px; line-height: 20px; }
+.wb__invitesuccess p { color: var(--wb-subdued); }
+.wb__invitesuccess button { color: var(--wb-action) !important; font-weight: 600 !important; }
 
 /* ── Events ── */
 
@@ -3975,8 +4108,7 @@ body.wb-open .tb__glyph--toggle { transform: rotate(180deg); }
   .model:active,
   .toolbar img:hover,
   .cadhead__back:hover,
-  .taskbar__utils img:hover,
-  .wb__link:hover img { transform: none !important; }
+  .taskbar__utils img:hover { transform: none !important; }
 
   /* The workbench doesn't travel; it fades in place over the page */
   .wb { transform: none !important; opacity: 0; transition: opacity var(--t-base) var(--ease), visibility 0s linear var(--t-base) !important; }
