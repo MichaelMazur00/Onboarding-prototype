@@ -1166,13 +1166,13 @@
     }
   });
 
-  /* ── Workbench · Blueprints ────────────── */
+  /* ── Workbench · Guides ────────────────── */
 
-  // [title, description, steps, API calls, products]. From the Blueprints
-  // screenshots; `backticks` in a title set that part in code type. The last
+  // [title, description, steps, API calls, products]. `backticks` in a title
+  // set that part in code type. The last
   // three testing scenarios were cut off below their titles, so their
   // descriptions and counts are filled in, not taken from the screenshots.
-  const BLUEPRINTS = [
+  const GUIDES = [
     { section: 'Full integrations',
       sub: 'Step through a full integration with the code samples you need to quickly get started.',
       cards: [
@@ -1209,9 +1209,9 @@
   const bpSearch = $('#bpSearch');
   const plural   = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
 
-  function renderBlueprints() {
+  function renderGuides() {
     const q = bpSearch.value.trim().toLowerCase();
-    const html = BLUEPRINTS.map(({ section, sub, cards }) => {
+    const html = GUIDES.map(({ section, sub, cards }) => {
       const shown = cards.filter(c => !q || `${c[0].replace(/`/g, '')} ${c[1]} ${c[4]}`.toLowerCase().includes(q));
       if (!shown.length) return '';
       return `<section class="bp__section">
@@ -1226,10 +1226,10 @@
         </div>
       </section>`;
     }).join('');
-    bpBody.innerHTML = html || '<p class="bp__none">No blueprints match your search.</p>';
+    bpBody.innerHTML = html || '<p class="bp__none">No guides match your search.</p>';
   }
-  bpSearch.addEventListener('input', renderBlueprints);
-  renderBlueprints();
+  bpSearch.addEventListener('input', renderGuides);
+  renderGuides();
 
   /* ── Workbench · Shell ─────────────────── */
 

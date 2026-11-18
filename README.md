@@ -80,7 +80,7 @@ Motion lives in the interaction:
 | Browse events | **Events** tab in Workbench — pick an event to read its payload; search filters by ID or type; the chevrons fold the JSON |
 | Browse API logs | **Logs** tab — pick a request to see its details and response body; search filters by resource ID |
 | Use the shell | **Shell** tab, or type into the prompt docked under the other tabs — try `stripe help`, `stripe customers list`, `stripe listen`, `clear`; ↑/↓ walk history. The API Explorer runs a resource + method through the shell |
-| Browse blueprints | **Blueprints** tab — search filters the cards by name, description or product |
+| Browse guides | **Guides** tab — search filters the cards by name, description or product |
 | Identity verification | **Verify your identity** under *Verify your business* — opens over any page |
 | Reopen the onboarding dialog | Click **Verify your business** in the banner |
 | Close the modal | `Esc`, or click the backdrop |
