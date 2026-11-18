@@ -2413,7 +2413,7 @@ body.wb-open .tb__glyph--toggle { transform: rotate(180deg); }
   line-height: 24px;
   letter-spacing: -0.31px;
 }
-.wb__inviteform { margin-top: 16px; display: flex; flex-direction: column; gap: 12px; }
+.wb__inviteform { margin-top: 8px; display: flex; flex-direction: column; gap: 12px; }
 .wb__inviterows { display: flex; flex-direction: column; gap: 8px; }
 .wb__inviterow {
   height: 40px;
