@@ -989,32 +989,40 @@
 
             <aside class="sh__explorer" id="shExplorer">
               <h3 class="sh__xtitle">API Explorer</h3>
-              <div class="sh__xfields">
-                <label class="sh__field">
-                  <span>Resource</span>
-                  <span class="sh__select">
-                    <select id="shResource">
-                      <option value="">Select a resource</option>
-                      <option value="customers">Customers</option>
-                      <option value="payment_intents">Payment Intents</option>
-                      <option value="charges">Charges</option>
-                      <option value="accounts">Accounts</option>
-                      <option value="transfers">Transfers</option>
-                    </select>
-                    <i class="ev__updown"><i></i><i></i></i>
-                  </span>
-                </label>
-                <label class="sh__field">
-                  <span>Method</span>
-                  <span class="sh__select">
-                    <select id="shMethod" disabled>
-                      <option value="">Select a method</option>
-                      <option value="list">List</option>
-                      <option value="retrieve">Retrieve</option>
-                    </select>
-                    <i class="ev__updown"><i></i><i></i></i>
-                  </span>
-                </label>
+              <div class="sh__xbody">
+                <div class="sh__xfields">
+                  <div class="sh__field">
+                    <span>Resource</span>
+                    <button class="sh__combo" id="shResourceBtn" type="button" aria-haspopup="listbox" aria-expanded="false">
+                      <span id="shResourceLabel">Select a resource</span>
+                      <i class="ev__updown"><i></i><i></i></i>
+                    </button>
+                    <div class="sh__menu" id="shResourceMenu" hidden>
+                      <label class="sh__menusearch">
+                        <i class="ev__glyph ev__glyph--search"></i>
+                        <input id="shResourceSearch" type="text" autocomplete="off" spellcheck="false" aria-label="Search resources" />
+                      </label>
+                      <div class="sh__options" id="shResourceOptions" role="listbox"></div>
+                    </div>
+                    <input type="hidden" id="shResource" value="" />
+                  </div>
+                  <div class="sh__field">
+                    <span>Method</span>
+                    <button class="sh__combo" id="shMethodBtn" type="button" aria-haspopup="listbox" aria-expanded="false" disabled>
+                      <span id="shMethodLabel">Select a method</span>
+                      <i class="ev__updown"><i></i><i></i></i>
+                    </button>
+                    <div class="sh__menu" id="shMethodMenu" hidden>
+                      <label class="sh__menusearch">
+                        <i class="ev__glyph ev__glyph--search"></i>
+                        <input id="shMethodSearch" type="text" autocomplete="off" spellcheck="false" aria-label="Search methods" />
+                      </label>
+                      <div class="sh__options" id="shMethodOptions" role="listbox"></div>
+                    </div>
+                    <input type="hidden" id="shMethod" value="" />
+                  </div>
+                </div>
+                <div class="sh__request" id="shRequest" aria-live="polite"></div>
               </div>
               <div class="sh__xfoot">
                 <button class="lg__textbtn" id="shClear">Clear</button>

@@ -1165,7 +1165,8 @@
       line('  stripe [command]'),
       line(''),
       line('Commands:'),
-      line('  customers, payment_intents, charges, accounts, transfers   list | retrieve'),
+      line('  customers, payment_intents, charges, transfers   list | retrieve'),
+      line('  accounts   create | update | retrieve | list | delete | capabilities | persons | reject | unreject'),
       line('  listen     Listen for webhook events'),
       line('  trigger    Trigger test webhook events'),
       line('  clear      Clear the screen'),
@@ -1209,6 +1210,18 @@
       html = SHELL_COMMANDS.help();
     } else if (SHELL_COMMANDS[sub]) {
       html = SHELL_COMMANDS[sub](arg);
+    } else if (sub === 'accounts' && ['create', 'update', 'delete', 'capabilities', 'persons', 'reject', 'unreject'].includes(arg)) {
+      const account = SHELL_OBJECTS.accounts;
+      const bodies = {
+        create: { ...account, created: Math.floor(Date.now() / 1000), type: 'custom' },
+        update: { ...account, metadata: { updated_from: 'api_explorer' } },
+        delete: { id: account.id, object: 'account', deleted: true },
+        capabilities: { object: 'list', data: [{ id: 'card_payments', object: 'capability', status: 'active' }, { id: 'transfers', object: 'capability', status: 'active' }], has_more: false },
+        persons: { object: 'list', data: [{ id: 'person_1Uct2JIQXb8NRkki', object: 'person', first_name: 'Stacy', last_name: 'Wilson' }], has_more: false },
+        reject: { ...account, requirements: { disabled_reason: 'rejected.other' } },
+        unreject: { ...account, requirements: { disabled_reason: null } }
+      };
+      html = `<pre class="ev__json">${renderJson(bodies[arg])}</pre>`;
     } else if (SHELL_OBJECTS[sub] && (arg === 'list' || arg === 'retrieve')) {
       const obj = SHELL_OBJECTS[sub];
       const body = arg === 'list'
@@ -1272,27 +1285,210 @@
   $('#whListen').addEventListener('click', () => { openShell(); runShell('stripe listen'); });
   $('#wbPromptExpand').addEventListener('click', openShell);
 
-  /* API Explorer: pick a resource and a method, and Run sends it through the
-     shell, so its answer reads like everything else typed there. */
+  /* API Explorer: Accounts has the complete action set and request editor from
+     the Workbench references. The other resources keep their compact
+     list/retrieve path, so this remains useful beyond the onboarding demo. */
   const shPanel    = $('[data-panel="shell"]');
   const shResource = $('#shResource');
   const shMethod   = $('#shMethod');
   const shRun      = $('#shRun');
-  const shCommand  = () => `stripe ${shResource.value} ${shMethod.value}`;
+  const shResourceBtn = $('#shResourceBtn');
+  const shMethodBtn = $('#shMethodBtn');
+  const shResourceMenu = $('#shResourceMenu');
+  const shMethodMenu = $('#shMethodMenu');
+  const shRequest = $('#shRequest');
+
+  const API_RESOURCES = [
+    { value: 'accounts', label: 'Accounts' },
+    { value: 'activity_logs_v2', label: 'Activity Logs v2', badges: ['Preview'] },
+    { value: 'charges', label: 'Charges' },
+    { value: 'customers', label: 'Customers' },
+    { value: 'payment_intents', label: 'Payment Intents' },
+    { value: 'transfers', label: 'Transfers' }
+  ];
+  const ACCOUNT_METHODS = [
+    ['create', 'Create'], ['update', 'Update'], ['retrieve', 'Retrieve'],
+    ['list', 'List'], ['delete', 'Delete'], ['capabilities', 'Capabilities'],
+    ['persons', 'Persons'], ['reject', 'Reject'], ['unreject', 'Unreject']
+  ];
+  const DEFAULT_METHODS = [['list', 'List'], ['retrieve', 'Retrieve']];
+  const CREATE_PARAMS = [
+    ['type', 'Enum'], ['account_token', 'Str'], ['business_profile', 'Hash'],
+    ['business_type', 'Enum'], ['capabilities', 'Hash'], ['company', 'Hash'],
+    ['controller', 'Hash'], ['country', 'Str'], ['default_currency', 'Str'],
+    ['documents', 'Hash'], ['email', 'Str'], ['expand', 'Arr'],
+    ['external_account', 'Str'], ['groups', 'Hash'], ['individual', 'Hash'],
+    ['metadata', 'Hash'], ['settings', 'Hash'], ['tos_acceptance', 'Hash']
+  ];
+  const ACTION_PARAMS = {
+    create: CREATE_PARAMS,
+    update: [['account', 'Str'], ...CREATE_PARAMS],
+    retrieve: [['account', 'Str'], ['expand', 'Arr']],
+    list: [['created', 'Str'], ['ending_before', 'Str'], ['limit', 'Int'], ['starting_after', 'Str']],
+    delete: [['account', 'Str']],
+    capabilities: [['account', 'Str'], ['capability', 'Str']],
+    persons: [['account', 'Str'], ['person', 'Str'], ['limit', 'Int']],
+    reject: [['account', 'Str'], ['reason', 'Enum']],
+    unreject: [['account', 'Str']]
+  };
+
+  const typeClass = type => `is-${type.toLowerCase()}`;
+  function closeExplorerMenus() {
+    [
+      [shResourceMenu, shResourceBtn],
+      [shMethodMenu, shMethodBtn]
+    ].forEach(([menu, btn]) => {
+      menu.hidden = true;
+      btn.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  function renderResourceOptions(query = '') {
+    const q = query.trim().toLowerCase();
+    const shown = API_RESOURCES.filter(item => item.label.toLowerCase().includes(q));
+    $('#shResourceOptions').innerHTML = shown.map(item => `
+      <button class="sh__option${item.value === shResource.value ? ' is-selected' : ''}" type="button" role="option" data-value="${item.value}">
+        <span class="sh__optlabel">${esc(item.label)}</span>
+        ${item.value === shResource.value ? '<i class="sh__check">✓</i>' : ''}
+      </button>`).join('') || '<p class="sh__nooptions">No resources found</p>';
+  }
+
+  function methodsForResource() {
+    return shResource.value === 'accounts' ? ACCOUNT_METHODS : DEFAULT_METHODS;
+  }
+
+  function renderMethodOptions(query = '') {
+    const q = query.trim().toLowerCase();
+    const shown = methodsForResource().filter(([, label]) => label.toLowerCase().includes(q));
+    $('#shMethodOptions').innerHTML = shown.map(([value, label]) => `
+      <button class="sh__option${value === shMethod.value ? ' is-selected' : ''}" type="button" role="option" data-value="${value}">
+        <span class="sh__optlabel">${label}</span>
+        ${value === shMethod.value ? '<i class="sh__check">✓</i>' : ''}
+      </button>`).join('') || '<p class="sh__nooptions">No methods found</p>';
+  }
+
+  function fieldRow([name, type], section) {
+    const composite = type === 'Hash' || type === 'Arr';
+    return `<div class="sh__prow">
+      <div class="sh__pname"><code>${esc(name)}</code><span class="sh__type ${typeClass(type)}">${type}</span></div>
+      <div class="sh__pvalue">
+        ${composite
+          ? `<button class="sh__addvalue" type="button" data-field="${esc(name)}" data-section="${section}">Add ${type === 'Hash' ? 'hash' : 'array'}</button>`
+          : `<input class="sh__pinput" data-field="${esc(name)}" data-section="${section}" placeholder="// ${type === 'Enum' ? 'select value' : 'enter value'}" autocomplete="off" spellcheck="false" />`}
+      </div>
+    </div>`;
+  }
+
+  function renderRequest() {
+    if (shResource.value !== 'accounts' || !shMethod.value) {
+      shRequest.innerHTML = '';
+      return;
+    }
+    const params = ACTION_PARAMS[shMethod.value] || [];
+    shRequest.innerHTML = `
+      <section class="sh__requestsection">
+        <h4>Headers</h4>
+        ${fieldRow(['stripe-account', 'Str'], 'header')}
+        ${fieldRow(['stripe-context', 'Str'], 'header')}
+      </section>
+      <section class="sh__requestsection">
+        <h4>Parameters</h4>
+        ${params.map(p => fieldRow(p, 'param')).join('') || '<p class="sh__emptyparams">No parameters</p>'}
+      </section>`;
+  }
+
+  function chooseResource(value) {
+    const item = API_RESOURCES.find(resource => resource.value === value);
+    shResource.value = value;
+    $('#shResourceLabel').textContent = item?.label || 'Select a resource';
+    shMethod.value = '';
+    $('#shMethodLabel').textContent = 'Select a method';
+    $('#shMethodSearch').value = '';
+    closeExplorerMenus();
+    syncExplorer();
+  }
+
+  function chooseMethod(value) {
+    const item = methodsForResource().find(([method]) => method === value);
+    shMethod.value = value;
+    $('#shMethodLabel').textContent = item?.[1] || 'Select a method';
+    closeExplorerMenus();
+    syncExplorer();
+  }
+
+  function toggleMenu(menu, button, input, renderOptions) {
+    const opening = menu.hidden;
+    closeExplorerMenus();
+    if (!opening) return;
+    menu.hidden = false;
+    button.setAttribute('aria-expanded', 'true');
+    renderOptions(input.value);
+    requestAnimationFrame(() => input.focus());
+  }
+
+  shResourceBtn.addEventListener('click', () =>
+    toggleMenu(shResourceMenu, shResourceBtn, $('#shResourceSearch'), renderResourceOptions));
+  shMethodBtn.addEventListener('click', () =>
+    toggleMenu(shMethodMenu, shMethodBtn, $('#shMethodSearch'), renderMethodOptions));
+  $('#shResourceSearch').addEventListener('input', e => renderResourceOptions(e.target.value));
+  $('#shMethodSearch').addEventListener('input', e => renderMethodOptions(e.target.value));
+  $('#shResourceOptions').addEventListener('click', e => {
+    const option = e.target.closest('[data-value]');
+    if (option) chooseResource(option.dataset.value);
+  });
+  $('#shMethodOptions').addEventListener('click', e => {
+    const option = e.target.closest('[data-value]');
+    if (option) chooseMethod(option.dataset.value);
+  });
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.sh__field')) closeExplorerMenus();
+  });
+
+  // Composite values begin as a compact action. Activating one turns it into
+  // an editable inline value without making the entire parameter table jump.
+  shRequest.addEventListener('click', e => {
+    const add = e.target.closest('.sh__addvalue');
+    if (!add) return;
+    const input = document.createElement('input');
+    input.className = 'sh__pinput';
+    input.dataset.field = add.dataset.field;
+    input.dataset.section = add.dataset.section;
+    input.placeholder = add.textContent.includes('hash') ? '// key=value' : '// value, value';
+    input.autocomplete = 'off';
+    input.spellcheck = false;
+    add.replaceWith(input);
+    input.focus();
+  });
+
+  const shCommand = () => {
+    const values = $$('.sh__pinput', shRequest)
+      .filter(input => input.value.trim())
+      .map(input => `--${input.dataset.field} ${JSON.stringify(input.value.trim())}`);
+    return [`stripe ${shResource.value} ${shMethod.value}`, ...values].join(' ');
+  };
 
   function syncExplorer() {
-    shMethod.disabled = !shResource.value;
-    if (!shResource.value) shMethod.value = '';
+    shMethodBtn.disabled = !shResource.value;
+    if (!shResource.value) {
+      shMethod.value = '';
+      $('#shMethodLabel').textContent = 'Select a method';
+    }
     shRun.disabled = !(shResource.value && shMethod.value);
+    renderRequest();
   }
-  shResource.addEventListener('change', syncExplorer);
-  shMethod.addEventListener('change', syncExplorer);
+
   shRun.addEventListener('click', () => runShell(shCommand()));
   $('#shShowCode').addEventListener('click', () => {
     if (!shRun.disabled) { shInput.value = shCommand(); shInput.focus(); }
   });
   $('#shClear').addEventListener('click', () => {
     shResource.value = '';
+    shMethod.value = '';
+    $('#shResourceLabel').textContent = 'Select a resource';
+    $('#shMethodLabel').textContent = 'Select a method';
+    $('#shResourceSearch').value = '';
+    $('#shMethodSearch').value = '';
+    closeExplorerMenus();
     syncExplorer();
   });
 
