@@ -1516,15 +1516,11 @@
 
   const API_RESOURCES = [
     { value: 'accounts', label: 'Accounts' },
-    { value: 'activity_logs_v2', label: 'Activity Logs v2', badges: ['Preview'] },
     { value: 'charges', label: 'Charges' },
-    { value: 'customers', label: 'Customers' },
-    { value: 'payment_intents', label: 'Payment Intents' },
-    { value: 'transfers', label: 'Transfers' }
+    { value: 'customers', label: 'Customers' }
   ];
   const ACCOUNT_METHODS = [
-    ['create', 'Create'], ['update', 'Update'],
-    ['reject', 'Reject'], ['unreject', 'Unreject']
+    ['create', 'Create'], ['reject', 'Reject'], ['unreject', 'Unreject']
   ];
   const DEFAULT_METHODS = [['list', 'List'], ['retrieve', 'Retrieve']];
   const CREATE_PARAMS = [
@@ -1537,7 +1533,6 @@
   ];
   const ACTION_PARAMS = {
     create: CREATE_PARAMS,
-    update: [['account', 'Str'], ...CREATE_PARAMS],
     reject: [['account', 'Str'], ['reason', 'Enum']],
     unreject: [['account', 'Str']]
   };
